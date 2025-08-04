@@ -1,0 +1,53 @@
+@use '../../../styles.scss' as vars;
+
+:host {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #0000008c;
+}
+
+#conteudo-modal {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: space-between;
+    align-items: center;
+
+    height: 75vh;
+    min-height: 300px;
+    width: 65vw;
+
+    padding: 2.5%;
+
+    background-color: vars.$cor-primaria;
+    border-radius: 10px;
+}
+
+header {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: space-between;
+    align-self: flex-start;
+
+    height: 10%;
+    width: 100%;
+
+    border-bottom: 1px solid vars.$cor-secundaria;
+}
+
+h2 {
+    font-size: 1.5rem;
+}
+
+#salvar {
+    height: 8%;
+    min-height: 39px;
+    width: 35%;
+}

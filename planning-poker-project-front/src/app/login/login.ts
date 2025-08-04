@@ -2,8 +2,6 @@ import { Component, HostBinding, inject,  } from '@angular/core';
 import { Router,  } from '@angular/router';
 import { gerarId } from '../../utils/geracaoId/gerarId';
 
-
-
 @Component({
   selector: 'app-login',
   imports: [],
@@ -15,7 +13,8 @@ export class Login {
   private router = inject(Router);
 
   novaSessao() {
-    this.router.navigate(['sessao', gerarId(6)]);
-  }
-  
+    const sessao: string = gerarId(6);
+    sessionStorage.setItem('sessao', sessao);
+    this.router.navigate(['sessao', sessao]);
+  }  
 }

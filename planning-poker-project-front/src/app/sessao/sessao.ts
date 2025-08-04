@@ -1,10 +1,11 @@
 import { AfterViewChecked, AfterViewInit, Component, HostBinding, inject, OnDestroy, ViewChild, ViewContainerRef } from '@angular/core';
 import { ToastService } from '../shared/toast/toast.service';
+import { ModalUsuario } from "./modais/modal-usuario/modal-usuario";
 
 
 @Component({
   selector: 'app-sessao',
-  imports: [],
+  imports: [ModalUsuario],
   templateUrl: './sessao.html',
   styleUrl: './sessao.scss'
 })

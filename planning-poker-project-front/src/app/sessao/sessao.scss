@@ -126,8 +126,13 @@ h1 {
 
     width: 65%;
     height: 75%;
-    border: 1px solid vars.$cor-secundaria;
+
+    border: 1px solid vars.$cor-terciaria;
     border-radius: 5px;
+}
+
+.usuario-estimativa > strong {
+    color: vars.$cor-terciaria;
 }
 
 .usuario-nome {

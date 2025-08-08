@@ -1,5 +1,6 @@
-import { ComponentRef, inject, Inject, Injectable, signal, ViewContainerRef, WritableSignal } from "@angular/core";
-import { Toast } from "./toast";
+import { ComponentRef, Injectable, ViewContainerRef } from "@angular/core";
+import { Toast } from "../../../componentes/shared/toast/toast";
+
 
 export interface ToastConfig {
     mensagem: string;
@@ -11,7 +12,7 @@ export class ToastService {
     private hostRef: ViewContainerRef | undefined;
     private toastRef: ComponentRef<Toast> | undefined;
 
-    private timeoutId: number | null = null;
+    private timeoutId: any;
     private toastSendoExibido: boolean = false;
 
     registrarHost(hostRef: ViewContainerRef) {
@@ -34,11 +35,12 @@ export class ToastService {
         }, duracao);
     }
 
-    cancelarToast() {
-        if(this.timeoutId) {
+    destruirToast() {
+        if (this.timeoutId) {
             clearInterval(this.timeoutId);
             this.timeoutId = null;
-        }   
+        }
+
         if (this.toastRef) {
             this.toastRef.destroy();
             this.toastRef = undefined;

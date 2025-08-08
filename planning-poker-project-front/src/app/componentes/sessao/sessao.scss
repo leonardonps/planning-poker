@@ -1,4 +1,4 @@
-@use '../../styles.scss' as vars;
+@use 'styles' as vars;
 
 :host {
     height: 100%;
@@ -175,19 +175,21 @@ h1 {
 }
 
 .opcao-estimativa:hover {
-    cursor: pointer;
-    
     position: relative;
     top: -3px;
+ 
+    background-color: vars.$cor-quartenaria;
+    color: vars.$cor-secundaria;
 
-    background-color: vars.$cor-secundaria;
-    color: vars.$cor-primaria;
+    cursor: pointer;
 }
 
 .selecionada {
     background-color: vars.$cor-secundaria;
     color: vars.$cor-primaria;
-
+    
     position: relative;
     top: -3px;
+    
+    cursor: pointer;
 }

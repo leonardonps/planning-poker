@@ -1,0 +1,31 @@
+<app-modal-base
+[titulo]="this.titulo">
+    <form [formGroup]="formUsuario" (ngSubmit)="salvar()">
+        <fieldset id="fieldset-usuario-nome">
+            <label for="usuario-nome">Nome</label>
+            <input 
+                #usuarioNome
+                type="text" 
+                id="usuario-nome" 
+                minlength="3"
+                maxlength="15"
+                placeholder="Nome" 
+                formControlName="nome">
+            @if(formUsuario.invalid && this.submitted) {
+                @if (formUsuario.controls['nome'].hasError('minlength')) {
+                    <span>Nome deve possuir, pelo menos, três caracteres</span>
+                } @else if (formUsuario.controls['nome'].hasError('maxlength')) {
+                    <span>Nome deve possuir até quinze caracteres</span>
+                } @else if (formUsuario.controls['nome'].invalid) {
+                    <span>Nome é obrigatório</span>
+                }
+            }
+
+        </fieldset>
+        <fieldset id="fieldset-observador">
+            <label for="observador">É apenas um observador?</label>
+            <input type="checkbox" id="observador" formControlName="observador">
+        </fieldset>
+    </form>
+    <button type="submit" id="salvar" class="botao-primario" (click)="salvar()">Salvar</button>
+</app-modal-base>

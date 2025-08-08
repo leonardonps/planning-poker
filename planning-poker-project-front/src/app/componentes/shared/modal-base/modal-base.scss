@@ -1,4 +1,4 @@
-@use '../../../styles.scss' as vars;
+@use 'styles' as vars;
 
 :host {
     display: flex;
@@ -24,7 +24,7 @@
     min-height: 300px;
     width: 65vw;
 
-    padding: 2.5%;
+    padding: 2%;
 
     background-color: vars.$cor-primaria;
     border-radius: 10px;
@@ -44,10 +44,4 @@ header {
 
 h2 {
     font-size: 1.5rem;
-}
-
-#salvar {
-    height: 8%;
-    min-height: 39px;
-    width: 35%;
 }

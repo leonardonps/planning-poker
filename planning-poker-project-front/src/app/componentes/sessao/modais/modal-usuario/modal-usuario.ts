@@ -4,6 +4,9 @@ import { gerarId } from "../../../../../utils/geracaoId/gerarId";
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms";
 import { SupabaseService } from "../../../../services/shared/supabase/supabase.service";
 import { ModalUsuarioService } from "../../../../services/sessao/modal-usuario/modal-usuario.service";
+import { SessaoService } from "../../../../services/sessao/sessao.service";
+import { ISessao } from "../../../../interfaces/shared/sessao/sessao";
+import { IsActiveMatchOptions } from "@angular/router";
 
 @Component({
   selector: 'app-modal-usuario',
@@ -15,6 +18,7 @@ export class ModalUsuario implements OnInit, AfterViewInit {
   @ViewChild('usuarioNome') usuarioNomeRef!: ElementRef; 
   
   supabaseService = inject(SupabaseService);
+  sessaoService = inject(SessaoService);
   modalUsuarioService = inject(ModalUsuarioService);
 
   titulo: string = 'Novo usuário';
@@ -32,26 +36,29 @@ export class ModalUsuario implements OnInit, AfterViewInit {
     this.usuarioNomeRef.nativeElement.focus();
   }
 
-  salvar(): void {
+  async salvar(): Promise<void> {
     this.submitted = true;
 
     if (this.formUsuario.valid) {
-      sessionStorage.setItem('usuarioId', gerarId(8));
-      sessionStorage.setItem('usuarioNome', this.formUsuario.controls['nome'].value);
-    
       const sessaoId = sessionStorage.getItem('sessaoId');
-      const usuario = {
-        id: sessionStorage.getItem('usuarioId'),
-        nome: sessionStorage.getItem('usuarioNome'),
-        observador: this.formUsuario.controls['observador'].value,
-        sessaoId: sessaoId
-      }
 
-      console.log('modal-usuario');
-      this.supabaseService.inserirUsuario(usuario);
-    
-      this.modalUsuarioService.fechar();
-      this.submitted = false;
+      if (sessaoId) {   
+        const usuarioId = gerarId(8);
+              
+        try {
+          await this.supabaseService.inserirUsuario({
+            id: usuarioId,
+            nome: this.formUsuario.controls['nome'].value,                
+            observador: this.formUsuario.controls['observador'].value,
+            sessaoId: sessaoId
+          });     
+
+          this.modalUsuarioService.destruirModal();
+          this.submitted = false;
+        } catch (error) {
+            alert(`Falha ao criar um usuário: ${error}`);
+        }
+      }
     }
   }
 }

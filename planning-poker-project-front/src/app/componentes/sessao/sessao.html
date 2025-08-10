@@ -10,10 +10,10 @@
 </header>
 <section id="sessao-principal">
     <div class="usuarios">
-        @for(usuario of this.usuarios; track $index; let i = $index) {
+        @for(usuario of this.usuarios(); track $index; let i = $index) {
              <div class="usuario">
                  <div class="usuario-estimativa"><strong>?</strong></div>
-                 <div class="usuario-nome"><strong>{{ usuario }}</strong></div>
+                 <div class="usuario-nome"><strong>{{ usuario.nome }}</strong></div>
              </div>
         }
     </div>
@@ -21,7 +21,7 @@
     </div>
 </section>
 <section id="sessao-estimativas">
-    @for(opcao of opcoesEstimativa; track $index) {              
+    @for(opcao of opcoesEstimativa(); track $index) {              
         <button type="button" [class.selecionada]="opcao === this.opcaoSelecionada" class="opcao-estimativa" (click)="selecionarOpcao(opcao)">{{ opcao }}</button>    
     }
 </section>

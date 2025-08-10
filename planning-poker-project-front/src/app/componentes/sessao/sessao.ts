@@ -1,7 +1,10 @@
-import { AfterViewInit, Component, HostBinding, inject, OnDestroy, ViewChild, ViewContainerRef } from "@angular/core";
+import { AfterViewInit, Component, HostBinding, inject, Injector, OnDestroy, Signal, ViewChild, ViewContainerRef, WritableSignal } from "@angular/core";
 import { ToastService } from "../../services/shared/toast/toast.service";
 import { ActivatedRoute } from "@angular/router";
 import { ModalUsuarioService } from "../../services/sessao/modal-usuario/modal-usuario.service";
+import { SessaoService } from "../../services/sessao/sessao.service";
+import { IUsuario } from "../../interfaces/shared/usuario";
+import { SupabaseService } from "../../services/shared/supabase/supabase.service";
 
 @Component({
   selector: 'app-sessao',
@@ -15,14 +18,16 @@ export class Sessao implements AfterViewInit, OnDestroy {
   @HostBinding('class') classname = 'flex-column justify-content-space-between align-items-center';
   
   private route = inject(ActivatedRoute);
-  private toastService = inject(ToastService);
+
+  private supabaseService = inject(SupabaseService);
+  private sessaoService = inject(SessaoService);
   private modalUsuarioService = inject(ModalUsuarioService);
+  private toastService = inject(ToastService);
 
   private sessaoLink = window.location.href;
 
-  usuarios: string[] = ['Amanda', 'Leonardo', 'Matheus', 'Raquel', 'Thamires', 'Maria Eduarda S', 'Pedro', 'Maria Rita', 'Yasmin', 'Renato', 'Romenildo', 'Mateus'];
-
-  opcoesEstimativa: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+  usuarios: WritableSignal<IUsuario[]> = this.sessaoService.usuarios;
+  opcoesEstimativa: WritableSignal<number[]> = this.sessaoService.opcoesEstimativa;
   opcaoSelecionada: number | null = null;
 
   ngOnInit() {
@@ -30,22 +35,21 @@ export class Sessao implements AfterViewInit, OnDestroy {
 
     if (sessaoId) {
       sessionStorage.setItem('sessaoId', sessaoId);
+      this.supabaseService.buscarUsuariosSessao(sessaoId);
+      this.supabaseService.buscarOpcoesEstimativaSessao(sessaoId);
     }
   }
 
   ngAfterViewInit() {
     this.toastService.registrarHost(this.toastContainerRef);
     this.modalUsuarioService.registrarHost(this.modalContainerRef);
-    this.modalUsuarioService.abrir();
+
+    this.modalUsuarioService.abrir(); 
   }
-  
-  // ngAfterViewChecked() {
-  //   console.log('mudou')
-  //   this.toastService.registrarHost(this.sessaoRef);
-  // }
 
   ngOnDestroy() {
     this.toastService.destruirToast();
+    this.modalUsuarioService.destruirModal();
     sessionStorage.clear();
   }
 
@@ -68,6 +72,5 @@ export class Sessao implements AfterViewInit, OnDestroy {
       return;
     }
     this.opcaoSelecionada = value;
-    console.log(this.opcaoSelecionada);
   }
 }

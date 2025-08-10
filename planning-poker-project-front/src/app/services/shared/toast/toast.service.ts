@@ -7,7 +7,9 @@ export interface ToastConfig {
     duracao?: number;
 }
 
-@Injectable({ providedIn: 'root'})
+@Injectable(
+    { providedIn: 'root'}
+)
 export class ToastService {
     private hostRef: ViewContainerRef | undefined;
     private toastRef: ComponentRef<Toast> | undefined;

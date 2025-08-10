@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { environment } from '../../../../enviroments/enviroment';
 import { ISessao } from '../../../interfaces/shared/sessao/sessao';
-import { IUsuario } from '../../../interfaces/shared/usuario';
+import { IUsuario } from '../../../interfaces/shared/usuario/usuario';
 import { SessaoService } from '../../sessao/sessao.service';
 
 @Injectable({
@@ -19,18 +19,12 @@ export class SupabaseService {
     this.iniciarRealTime();
   }
 
-  async inserirSessao(sessao: ISessao): Promise<ISessao[] | null> {
+  async inserirSessao(sessao: ISessao): Promise<ISessao | null> {
     const sessaoEncontrada = await this.buscarSessao(sessao.id);
-
-    if (!sessaoEncontrada) {
-      return null;
-    }
     
-    if (sessaoEncontrada && sessaoEncontrada.length > 0) {
-      return sessaoEncontrada;
-    }
-
-    const { data, error } = await this.supabase.from('sessao').upsert([{id: sessao.id, opcoes_estimativa: sessao.opcoesEstimativa}]).select();
+    if (sessaoEncontrada) return sessaoEncontrada;
+    
+    const { data, error } = await this.supabase.from('sessao').upsert([{id: sessao.id, opcoes_estimativa: sessao.opcoesEstimativa}]).select().single();
 
     if (error) {
       alert(`Falha ao inserir sessão: ${error.message}`);
@@ -40,8 +34,8 @@ export class SupabaseService {
     return data;
   }
 
-  async buscarSessao(id: string): Promise<ISessao[] | null> {
-    const { data, error} = await this.supabase.from('sessao').select().eq('id', id);
+  async buscarSessao(id: string): Promise<ISessao | null> {
+    const { data, error} = await this.supabase.from('sessao').select().eq('id', id).maybeSingle();
 
     if (error) {
       alert(`Falha ao buscar por uma sessão: ${error.message}`);
@@ -50,18 +44,30 @@ export class SupabaseService {
     return data;
   }
 
-  async inserirUsuario(usuario: IUsuario): Promise<void> {   
+  async inserirUsuario(usuario: IUsuario): Promise<IUsuario | null> {   
     const usuarioEncontrado = await this.buscarUsuario(usuario.id);
 
-    if(usuarioEncontrado && usuarioEncontrado.length === 0) {
-      const { error } = await this.supabase.from('usuario').insert([{id: usuario.id, nome: usuario.nome, observador: usuario.observador, sessao_id: usuario.sessaoId}]);
+    if (usuarioEncontrado) return usuarioEncontrado;
+    
+    const { data, error } = await this.supabase.from('usuario').insert([{id: usuario.id, nome: usuario.nome, observador: usuario.observador, sessao_id: usuario.sessaoId}]).select().single();
   
-      if (error) {
-        alert(`Falha ao inserir usuario: ${error.message}`);
-        return;
-      }
+    if (error) {
+      alert(`Falha ao inserir usuario: ${error.message}`);
+      return null;
     }
     
+    return data;
+  }
+  
+  async buscarUsuario(id: string): Promise<IUsuario | null> {
+    const { data, error} = await this.supabase.from('usuario').select().eq('id', id).maybeSingle();
+
+    if (error) {
+      alert(`Falha ao buscar por um usuario: ${error.message}`);
+      return null;
+    }
+
+    return data;
   }
 
   async buscarUsuariosSessao(sessaoId: string): Promise<void> {
@@ -88,19 +94,17 @@ export class SupabaseService {
     this.sessaoService.opcoesEstimativa.set(opcoesEstimativa.split(',').map(Number));
   }
 
-  async buscarUsuario(id: string): Promise<IUsuario[] | null> {
-    const { data, error} = await this.supabase.from('usuario').select().eq('id', id);
+
+  async atualizarEstimativaUsuario(usuarioId: string, estimativa: number | null): Promise<void> {
+    const { error } = await this.supabase.from('usuario').update({estimativa: estimativa}).eq('id', usuarioId);
 
     if (error) {
-      alert(`Falha ao buscar por um usuario: ${error.message}`);
-      return null;
+      alert(`Falha ao atualizar estimativa do usuário: ${error}`);
     }
-
-    return data;
   }
 
   iniciarRealTime() {
-    const channel = this.supabase.channel('schema-db-atualizacao').on('postgres_changes', {
+    const channelInsert = this.supabase.channel('insercao-usuario').on('postgres_changes', {
       event: 'INSERT',
       schema: 'public',
       table: 'usuario'
@@ -109,9 +113,24 @@ export class SupabaseService {
         const novoUsuario: IUsuario = payload.new as IUsuario;
         const usuarios = this.sessaoService.usuarios();
 
-        console.log(novoUsuario);
-
-        this.sessaoService.usuarios.set([...usuarios, novoUsuario])
+        this.sessaoService.usuarios.set([...usuarios, novoUsuario]);
+      }
+    ).subscribe();
+    
+    const channelUpdate = this.supabase.channel('atualizacao-estimativa').on('postgres_changes', {
+      event: 'UPDATE',
+      schema: 'public',
+      table: 'usuario'
+    },
+      (payload) => {
+        const usuariosAtualizados: IUsuario[] = this.sessaoService.usuarios().map(usuario => 
+          usuario.id === payload.new['id'] ? {
+            ...usuario,
+            estimativa: payload.new['estimativa']
+          } as IUsuario : usuario as IUsuario
+        );
+        
+        this.sessaoService.usuarios.set(usuariosAtualizados)
       }
     ).subscribe();
   }

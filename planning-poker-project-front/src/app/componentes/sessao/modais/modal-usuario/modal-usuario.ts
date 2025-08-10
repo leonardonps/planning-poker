@@ -7,6 +7,7 @@ import { ModalUsuarioService } from "../../../../services/sessao/modal-usuario/m
 import { SessaoService } from "../../../../services/sessao/sessao.service";
 import { ISessao } from "../../../../interfaces/shared/sessao/sessao";
 import { IsActiveMatchOptions } from "@angular/router";
+import { IUsuario } from "../../../../interfaces/shared/usuario/usuario";
 
 @Component({
   selector: 'app-modal-usuario',
@@ -42,19 +43,24 @@ export class ModalUsuario implements OnInit, AfterViewInit {
     if (this.formUsuario.valid) {
       const sessaoId = sessionStorage.getItem('sessaoId');
 
-      if (sessaoId) {   
-        const usuarioId = gerarId(8);
-              
+      if (sessaoId) {                 
         try {
-          await this.supabaseService.inserirUsuario({
-            id: usuarioId,
+          const usuario = await this.supabaseService.inserirUsuario({
+            id: gerarId(8),
             nome: this.formUsuario.controls['nome'].value,                
             observador: this.formUsuario.controls['observador'].value,
             sessaoId: sessaoId
           });     
 
+          if(!usuario) return alert('Falha ao salvar usuário');
+
+          this.sessaoService.usuario.set(usuario);
+
+          sessionStorage.setItem('usuarioId', usuario.id);
+
           this.modalUsuarioService.destruirModal();
           this.submitted = false;
+          
         } catch (error) {
             alert(`Falha ao criar um usuário: ${error}`);
         }

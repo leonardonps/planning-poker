@@ -143,6 +143,16 @@ h1 {
     font-size: 0.75rem;
 }
 
+.usuario-estimativa.dada {
+    background-color: vars.$cor-secundaria;
+    border-color: vars.$cor-secundaria;
+}
+
+.usuario-estimativa.dada > strong {
+    background-color: vars.$cor-secundaria;
+    color: vars.$cor-primaria;
+}
+
 #sessao-estimativas {
     display: flex;
     flex-flow: row wrap;

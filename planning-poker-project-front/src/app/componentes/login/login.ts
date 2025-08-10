@@ -19,13 +19,13 @@ export class Login {
 
   async criarNovaSessao() {
     try {
-      const sessao: ISessao[] | null = await this.supabaseService.inserirSessao({
+      const sessao: ISessao | null = await this.supabaseService.inserirSessao({
         id: gerarId(6), 
         opcoesEstimativa: opcoesIniciaisEstimativa
       });
 
       if (sessao) {
-        this.router.navigate(['sessao', sessao[0].id]);
+        this.router.navigate(['sessao', sessao.id]);
       }
     } catch(error) {
       alert('Falha ao criar a sessão');

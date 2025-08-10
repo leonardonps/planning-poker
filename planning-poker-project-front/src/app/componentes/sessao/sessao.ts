@@ -1,9 +1,9 @@
-import { AfterViewInit, Component, HostBinding, inject, Injector, OnDestroy, Signal, ViewChild, ViewContainerRef, WritableSignal } from "@angular/core";
+import { AfterViewInit, Component, computed, HostBinding, inject, OnDestroy, Signal, ViewChild, ViewContainerRef, WritableSignal } from "@angular/core";
 import { ToastService } from "../../services/shared/toast/toast.service";
 import { ActivatedRoute } from "@angular/router";
 import { ModalUsuarioService } from "../../services/sessao/modal-usuario/modal-usuario.service";
 import { SessaoService } from "../../services/sessao/sessao.service";
-import { IUsuario } from "../../interfaces/shared/usuario";
+import { IUsuario } from "../../interfaces/shared/usuario/usuario";
 import { SupabaseService } from "../../services/shared/supabase/supabase.service";
 
 @Component({
@@ -27,17 +27,22 @@ export class Sessao implements AfterViewInit, OnDestroy {
   private sessaoLink = window.location.href;
 
   usuarios: WritableSignal<IUsuario[]> = this.sessaoService.usuarios;
-  opcoesEstimativa: WritableSignal<number[]> = this.sessaoService.opcoesEstimativa;
+  estimativasUsuarios: Signal<number[]> = computed(() => this.usuarios().filter(usuario => usuario.estimativa !== null).map(usuario => +usuario.estimativa!));
+  opcoesEstimativa: WritableSignal<number[] | null> = this.sessaoService.opcoesEstimativa;
   opcaoSelecionada: number | null = null;
 
   ngOnInit() {
     const sessaoId = this.route.snapshot.paramMap.get('id');
+    const usuarioEstimativa = sessionStorage.getItem('usuarioEstimativa');
 
     if (sessaoId) {
       sessionStorage.setItem('sessaoId', sessaoId);
+
       this.supabaseService.buscarUsuariosSessao(sessaoId);
       this.supabaseService.buscarOpcoesEstimativaSessao(sessaoId);
     }
+
+    if (usuarioEstimativa) this.opcaoSelecionada = +usuarioEstimativa;
   }
 
   ngAfterViewInit() {
@@ -67,10 +72,18 @@ export class Sessao implements AfterViewInit, OnDestroy {
   }
 
   selecionarOpcao(value: number) {
-    if (this.opcaoSelecionada === value) {
-      this.opcaoSelecionada = null;
-      return;
-    }
-    this.opcaoSelecionada = value;
+    const usuarioId = sessionStorage.getItem('usuarioId');
+
+    if (!usuarioId) return alert('Usuário sem o id armazenado na sessionStorage');
+
+    this.opcaoSelecionada = this.
+    opcaoSelecionada === value ? null : value;
+
+    this.supabaseService.atualizarEstimativaUsuario(usuarioId, this.opcaoSelecionada);
+
+    if (this.opcaoSelecionada) 
+      sessionStorage.setItem('usuarioEstimativa', this.opcaoSelecionada.toString());
+    else 
+      sessionStorage.removeItem('usuarioEstimativa');
   }
 }

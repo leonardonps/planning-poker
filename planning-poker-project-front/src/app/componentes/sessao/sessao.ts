@@ -1,10 +1,11 @@
-import { AfterViewInit, Component, computed, HostBinding, inject, OnDestroy, Signal, ViewChild, ViewContainerRef, WritableSignal } from "@angular/core";
+import { AfterViewInit, Component, computed, HostBinding, inject, OnDestroy, signal, Signal, ViewChild, ViewContainerRef, WritableSignal } from "@angular/core";
 import { ToastService } from "../../services/shared/toast/toast.service";
 import { ActivatedRoute } from "@angular/router";
 import { ModalUsuarioService } from "../../services/sessao/modal-usuario/modal-usuario.service";
 import { SessaoService } from "../../services/sessao/sessao.service";
 import { IUsuario } from "../../interfaces/shared/usuario/usuario";
 import { SupabaseService } from "../../services/shared/supabase/supabase.service";
+import { truncarNumero } from "../../../utils/truncarNumero/truncarNumero";
 
 @Component({
   selector: 'app-sessao',
@@ -28,6 +29,8 @@ export class Sessao implements AfterViewInit, OnDestroy {
 
   usuarios: WritableSignal<IUsuario[]> = this.sessaoService.usuarios;
   estimativasUsuarios: Signal<number[]> = computed(() => this.usuarios().filter(usuario => usuario.estimativa !== null).map(usuario => +usuario.estimativa!));
+  mediaEstimativasSessao: WritableSignal<number | null> = this.sessaoService.mediaEstimativasSessao;
+
   opcoesEstimativa: WritableSignal<number[] | null> = this.sessaoService.opcoesEstimativa;
   opcaoSelecionada: number | null = null;
 
@@ -85,5 +88,16 @@ export class Sessao implements AfterViewInit, OnDestroy {
       sessionStorage.setItem('usuarioEstimativa', this.opcaoSelecionada.toString());
     else 
       sessionStorage.removeItem('usuarioEstimativa');
+  }
+
+  calcularEstimativa() {
+    const sessaoId = sessionStorage.getItem('sessaoId');
+
+    if (!sessaoId) return alert('O id da sessão não está armazenado na sessionStorage');
+
+    const valorInicial: number = 0;
+    const mediaEstimativasSessao: number = this.estimativasUsuarios().reduce((somaEstimativas, estimativa) => somaEstimativas + estimativa, valorInicial)/this.estimativasUsuarios().length;
+
+    this.supabaseService.atualizarEstimativaSessao(sessaoId, truncarNumero(mediaEstimativasSessao, 2));
   }
 }

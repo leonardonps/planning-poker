@@ -18,9 +18,12 @@
         }
     </div>
     <div id="mesa">
-        @if (this.estimativasUsuarios().length > 0) {
-            <button>Estimar</button>
-        } @else {
+        @if (this.estimativasUsuarios().length > 0 && !this.mediaEstimativasSessao()) {
+            <button type="button" class="botao-primario" id="botao-estimar" (click)="calcularEstimativa()">Estimar</button>
+        } @else if (this.mediaEstimativasSessao()) {
+            <p>{{ this.mediaEstimativasSessao()?.toFixed(1)?.replace('.', ',')}}</p>
+        } 
+        @else {
             <p>Pelo menos, um usuário precisa colocar sua estimativa</p>
         }
     </div>

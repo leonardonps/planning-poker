@@ -103,8 +103,18 @@ export class SupabaseService {
     }
   }
 
+  async atualizarEstimativaSessao(sessaoId: string, estimativa: number | null): Promise<void> {
+    const { error } = await this.supabase.from('sessao').update({media_estimativas_sessao: estimativa}).eq('id', sessaoId);
+
+    console.log('tô aqui');
+
+    if (error) {
+      alert(`Falha ao atualizar estimativa da sessão: ${error}`);
+    }
+  }
+
   iniciarRealTime() {
-    const channelInsert = this.supabase.channel('insercao-usuario').on('postgres_changes', {
+    const channelInsertUsuario = this.supabase.channel('insercao-usuario').on('postgres_changes', {
       event: 'INSERT',
       schema: 'public',
       table: 'usuario'
@@ -117,7 +127,7 @@ export class SupabaseService {
       }
     ).subscribe();
     
-    const channelUpdate = this.supabase.channel('atualizacao-estimativa').on('postgres_changes', {
+    const channelUpdateUsuario = this.supabase.channel('atualizacao-estimativa-usuario').on('postgres_changes', {
       event: 'UPDATE',
       schema: 'public',
       table: 'usuario'
@@ -133,5 +143,15 @@ export class SupabaseService {
         this.sessaoService.usuarios.set(usuariosAtualizados)
       }
     ).subscribe();
+
+    const channelUpdateEstimativa = this.supabase.channel('atualizacao-media-estimativas-sessao').on('postgres_changes', {
+      event: 'UPDATE',
+      schema: 'public',
+      table: 'sessao'
+    }, (payload) => {
+      const mediaEstimativasSessao: number = payload.new['media_estimativas_sessao'] as number;
+      this.sessaoService.mediaEstimativasSessao.set(mediaEstimativasSessao);
+    }).subscribe();
+
   }
 }

@@ -6,6 +6,7 @@ import { ISessao } from "../../interfaces/shared/sessao/sessao";
 export class SessaoService {
     usuarios: WritableSignal<IUsuario[]> = signal([]);
     usuario: WritableSignal<IUsuario | null> = signal(null);
+    opcaoSelecionada: WritableSignal<number | null> = signal(null);
     opcoesEstimativa: WritableSignal<number[] | null> = signal(null);
     mediaEstimativasSessao: WritableSignal<number | null> = signal(null);
 }

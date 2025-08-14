@@ -12,25 +12,27 @@
     <div class="usuarios">
         @for(usuario of this.usuarios(); track $index; let i = $index) {
              <div class="usuario">
-                 <div class="usuario-estimativa"[class.dada]="usuario.estimativa !== null"><strong>?</strong></div>
+                 <div class="usuario-estimativa"[class.dada]="usuario.estimativa!== null">{{ this.mediaEstimativasSessao() ? usuario.estimativa : '?'}}</div>
                  <div class="usuario-nome"><strong>{{ usuario.nome }}</strong></div>
              </div>
         }
     </div>
     <div id="mesa">
         @if (this.estimativasUsuarios().length > 0 && !this.mediaEstimativasSessao()) {
-            <button type="button" class="botao-primario" id="botao-estimar" (click)="calcularEstimativa()">Estimar</button>
+            <button type="button" class="botao-primario" id="botao-estimar" (click)="calcularEstimativaSessao()">Estimar</button>
         } @else if (this.mediaEstimativasSessao()) {
-            <p>{{ this.mediaEstimativasSessao()?.toFixed(1)?.replace('.', ',')}}</p>
+            <p id="media-estimativa-sessao">{{ this.mediaEstimativasSessao()}}</p>
+            <button type="button" class="botao-primario" id="botao-reiniciar" (click)="reiniciarEstimativaSessao()">Reiniciar</button>
         } 
         @else {
-            <p>Pelo menos, um usuário precisa colocar sua estimativa</p>
+            <p id="mensagem-estimativa-obrigatoria">Pelo menos, um usuário precisa colocar sua estimativa</p>
         }
     </div>
 </section>
 <section id="sessao-estimativas">
+    <!-- <button type="button" class="botao-primario">Mudar</button> -->
     @for(opcao of this.opcoesEstimativa(); track $index) {              
-        <button type="button" [class.selecionada]="opcao === this.opcaoSelecionada" class="opcao-estimativa" (click)="selecionarOpcao(opcao)">{{ opcao }}</button>    
+        <button type="button" [class.selecionada]="opcao === this.opcaoSelecionada()" class="opcao-estimativa" [class.desabilitado]="this.mediaEstimativasSessao() && opcao !== this.opcaoSelecionada()"[disabled]="this.mediaEstimativasSessao()"   (click)="selecionarOpcao(opcao)">{{ opcao }}</button>    
     }
 </section>
 <ng-container #toast></ng-container>

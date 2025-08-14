@@ -13,11 +13,11 @@
                 formControlName="nome">
             @if(formUsuario.invalid && this.submitted) {
                 @if (formUsuario.controls['nome'].hasError('minlength')) {
-                    <span>Nome deve possuir, pelo menos, três caracteres</span>
+                    <small>Nome deve possuir, pelo menos, três caracteres</small>
                 } @else if (formUsuario.controls['nome'].hasError('maxlength')) {
-                    <span>Nome deve possuir até quinze caracteres</span>
+                    <small>Nome deve possuir até quinze caracteres</small>
                 } @else if (formUsuario.controls['nome'].invalid) {
-                    <span>Nome é obrigatório</span>
+                    <small>Nome é obrigatório</small>
                 }
             }
 

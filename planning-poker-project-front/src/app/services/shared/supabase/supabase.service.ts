@@ -15,8 +15,6 @@ export class SupabaseService {
 
   constructor() {
     this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
-
-    this.iniciarRealTime();
   }
 
   async inserirSessao(sessao: ISessao): Promise<ISessao | null> {
@@ -82,76 +80,88 @@ export class SupabaseService {
   }
 
   async buscarOpcoesEstimativaSessao(sessaoId: string): Promise<void> {
-     const { data, error } = await this.supabase.from('sessao').select('opcoes_estimativa').eq('id', sessaoId);
+     const { data, error } = await this.supabase.from('sessao').select('opcoes_estimativa').eq('id', sessaoId).single();
 
     if (error) {
       alert(`Erro ao buscar por opções de estimativas de uma sessão:${error.message}`)
       return;
     }
 
-    const opcoesEstimativa = data[0].opcoes_estimativa;
+    const opcoesEstimativa = data.opcoes_estimativa;
 
     this.sessaoService.opcoesEstimativa.set(opcoesEstimativa.split(',').map(Number));
   }
-
 
   async atualizarEstimativaUsuario(usuarioId: string, estimativa: number | null): Promise<void> {
     const { error } = await this.supabase.from('usuario').update({estimativa: estimativa}).eq('id', usuarioId);
 
     if (error) {
-      alert(`Falha ao atualizar estimativa do usuário: ${error}`);
+      alert(`Falha ao atualizar estimativa do usuário: ${error.message}`);
     }
+  }
+
+  async atualizarEstimativasUsuarios(sessaoId: string, estimativa: number | null) {
+      const { error } = await this.supabase.from('usuario').update({estimativa: estimativa}).eq('sessao_id', sessaoId);
+
+      if (error) {
+        alert(`Falha ao atualizar estimativas dos usuários: ${error.message}`);
+      }
   }
 
   async atualizarEstimativaSessao(sessaoId: string, estimativa: number | null): Promise<void> {
     const { error } = await this.supabase.from('sessao').update({media_estimativas_sessao: estimativa}).eq('id', sessaoId);
-
-    console.log('tô aqui');
 
     if (error) {
       alert(`Falha ao atualizar estimativa da sessão: ${error}`);
     }
   }
 
-  iniciarRealTime() {
-    const channelInsertUsuario = this.supabase.channel('insercao-usuario').on('postgres_changes', {
-      event: 'INSERT',
-      schema: 'public',
-      table: 'usuario'
-    },
-      (payload) => {
-        const novoUsuario: IUsuario = payload.new as IUsuario;
-        const usuarios = this.sessaoService.usuarios();
+  criarCanal(sessaoId: string) {
+     const channel = this.supabase.channel('changes')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'usuario',
+        filter: `sessao_id=eq.${sessaoId}`
+      },
+        (payload) => {
+          const novoUsuario: IUsuario = payload.new as IUsuario;
+          const usuarios = this.sessaoService.usuarios();
 
-        this.sessaoService.usuarios.set([...usuarios, novoUsuario]);
-      }
-    ).subscribe();
-    
-    const channelUpdateUsuario = this.supabase.channel('atualizacao-estimativa-usuario').on('postgres_changes', {
-      event: 'UPDATE',
-      schema: 'public',
-      table: 'usuario'
-    },
-      (payload) => {
-        const usuariosAtualizados: IUsuario[] = this.sessaoService.usuarios().map(usuario => 
-          usuario.id === payload.new['id'] ? {
-            ...usuario,
-            estimativa: payload.new['estimativa']
-          } as IUsuario : usuario as IUsuario
-        );
-        
-        this.sessaoService.usuarios.set(usuariosAtualizados)
-      }
-    ).subscribe();
+          this.sessaoService.usuarios.set([...usuarios, novoUsuario]);
+        }
+      ).on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'usuario',
+        filter: `sessao_id=eq.${sessaoId}`
+      },
+        (payload) => {
+          const usuariosAtualizados: IUsuario[] = this.sessaoService.usuarios().map(usuario => 
+            usuario.id === payload.new['id'] ? {
+              ...usuario,
+              estimativa: payload.new['estimativa']
+            } as IUsuario : usuario as IUsuario
+          );
+          
+          this.sessaoService.usuarios.set(usuariosAtualizados);
+        }
+      ).on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'sessao',
+        filter: `id=eq.${sessaoId}`
+      }, (payload) => {
+        const mediaEstimativasSessao: number | null = payload.new['media_estimativas_sessao'];
 
-    const channelUpdateEstimativa = this.supabase.channel('atualizacao-media-estimativas-sessao').on('postgres_changes', {
-      event: 'UPDATE',
-      schema: 'public',
-      table: 'sessao'
-    }, (payload) => {
-      const mediaEstimativasSessao: number = payload.new['media_estimativas_sessao'] as number;
-      this.sessaoService.mediaEstimativasSessao.set(mediaEstimativasSessao);
-    }).subscribe();
+        if (mediaEstimativasSessao == null) {
+          if (sessionStorage.getItem('usuarioEstimativa')) sessionStorage.removeItem('usuarioEstimativa');
 
+          this.sessaoService.opcaoSelecionada.set(null);
+        }
+
+        this.sessaoService.mediaEstimativasSessao.set(mediaEstimativasSessao);
+      })
+    .subscribe();
   }
 }

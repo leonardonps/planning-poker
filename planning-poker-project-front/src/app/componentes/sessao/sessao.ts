@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, computed, HostBinding, inject, OnDestroy, signal, Signal, ViewChild, ViewContainerRef, WritableSignal } from "@angular/core";
+import { AfterViewInit, Component, computed, HostBinding, inject, OnDestroy, Signal, ViewChild, ViewContainerRef, WritableSignal } from "@angular/core";
 import { ToastService } from "../../services/shared/toast/toast.service";
 import { ActivatedRoute } from "@angular/router";
 import { ModalUsuarioService } from "../../services/sessao/modal-usuario/modal-usuario.service";
@@ -22,17 +22,18 @@ export class Sessao implements AfterViewInit, OnDestroy {
 
   private supabaseService = inject(SupabaseService);
   private sessaoService = inject(SessaoService);
+  
   private modalUsuarioService = inject(ModalUsuarioService);
   private toastService = inject(ToastService);
 
   private sessaoLink = window.location.href;
 
-  usuarios: WritableSignal<IUsuario[]> = this.sessaoService.usuarios;
+  usuarios: Signal<IUsuario[]> = computed(() => this.sessaoService.usuarios().sort((a,b) => a.nome.localeCompare(b.nome)));
   estimativasUsuarios: Signal<number[]> = computed(() => this.usuarios().filter(usuario => usuario.estimativa !== null).map(usuario => +usuario.estimativa!));
   mediaEstimativasSessao: WritableSignal<number | null> = this.sessaoService.mediaEstimativasSessao;
 
   opcoesEstimativa: WritableSignal<number[] | null> = this.sessaoService.opcoesEstimativa;
-  opcaoSelecionada: number | null = null;
+  opcaoSelecionada: WritableSignal<number | null> = this.sessaoService.opcaoSelecionada;
 
   ngOnInit() {
     const sessaoId = this.route.snapshot.paramMap.get('id');
@@ -43,9 +44,10 @@ export class Sessao implements AfterViewInit, OnDestroy {
 
       this.supabaseService.buscarUsuariosSessao(sessaoId);
       this.supabaseService.buscarOpcoesEstimativaSessao(sessaoId);
+      this.supabaseService.criarCanal(sessaoId);
     }
 
-    if (usuarioEstimativa) this.opcaoSelecionada = +usuarioEstimativa;
+    if (usuarioEstimativa) this.opcaoSelecionada.set( +usuarioEstimativa);
   }
 
   ngAfterViewInit() {
@@ -79,18 +81,20 @@ export class Sessao implements AfterViewInit, OnDestroy {
 
     if (!usuarioId) return alert('Usuário sem o id armazenado na sessionStorage');
 
-    this.opcaoSelecionada = this.
-    opcaoSelecionada === value ? null : value;
+    this.opcaoSelecionada.set(this.
+    opcaoSelecionada() === value ? null : value);
 
-    this.supabaseService.atualizarEstimativaUsuario(usuarioId, this.opcaoSelecionada);
+    const opcaoSelecionada: number | null = this.opcaoSelecionada();
 
-    if (this.opcaoSelecionada) 
-      sessionStorage.setItem('usuarioEstimativa', this.opcaoSelecionada.toString());
+    this.supabaseService.atualizarEstimativaUsuario(usuarioId, this.opcaoSelecionada());
+
+    if (opcaoSelecionada) 
+      sessionStorage.setItem('usuarioEstimativa', opcaoSelecionada.toString());
     else 
       sessionStorage.removeItem('usuarioEstimativa');
   }
 
-  calcularEstimativa() {
+  calcularEstimativaSessao() {
     const sessaoId = sessionStorage.getItem('sessaoId');
 
     if (!sessaoId) return alert('O id da sessão não está armazenado na sessionStorage');
@@ -98,6 +102,15 @@ export class Sessao implements AfterViewInit, OnDestroy {
     const valorInicial: number = 0;
     const mediaEstimativasSessao: number = this.estimativasUsuarios().reduce((somaEstimativas, estimativa) => somaEstimativas + estimativa, valorInicial)/this.estimativasUsuarios().length;
 
-    this.supabaseService.atualizarEstimativaSessao(sessaoId, truncarNumero(mediaEstimativasSessao, 2));
+    this.supabaseService.atualizarEstimativaSessao(sessaoId, truncarNumero(mediaEstimativasSessao, 1));
+  }
+
+  reiniciarEstimativaSessao() {
+    const sessaoId = sessionStorage.getItem('sessaoId');
+
+    if (!sessaoId) return alert('O id da sessão não está armazenado na sessionStorage'); 
+
+    this.supabaseService.atualizarEstimativaSessao(sessaoId, null);
+    this.supabaseService.atualizarEstimativasUsuarios(sessaoId, null);
   }
 }

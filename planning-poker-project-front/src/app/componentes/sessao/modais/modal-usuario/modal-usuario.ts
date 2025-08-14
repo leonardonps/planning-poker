@@ -42,9 +42,8 @@ export class ModalUsuario implements OnInit, AfterViewInit {
 
     if (this.formUsuario.valid) {
       const sessaoId = sessionStorage.getItem('sessaoId');
-
       if (sessaoId) {                 
-        try {
+        try {          
           const usuario = await this.supabaseService.inserirUsuario({
             id: gerarId(8),
             nome: this.formUsuario.controls['nome'].value,                

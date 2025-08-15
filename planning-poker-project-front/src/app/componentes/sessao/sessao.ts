@@ -41,10 +41,11 @@ export class Sessao implements AfterViewInit, OnDestroy {
 
     if (sessaoId) {
       sessionStorage.setItem('sessaoId', sessaoId);
-
+     
+      this.supabaseService.criarCanal(sessaoId);
+      
       this.supabaseService.buscarUsuariosSessao(sessaoId);
       this.supabaseService.buscarOpcoesEstimativaSessao(sessaoId);
-      this.supabaseService.criarCanal(sessaoId);
     }
 
     if (usuarioEstimativa) this.opcaoSelecionada.set( +usuarioEstimativa);
@@ -58,9 +59,13 @@ export class Sessao implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    sessionStorage.clear();
+    
     this.toastService.destruirToast();
     this.modalUsuarioService.destruirModal();
-    sessionStorage.clear();
+    
+    this.supabaseService.destruirCanal();
+
   }
 
   copiarSessaoLink() {
@@ -112,5 +117,9 @@ export class Sessao implements AfterViewInit, OnDestroy {
 
     this.supabaseService.atualizarEstimativaSessao(sessaoId, null);
     this.supabaseService.atualizarEstimativasUsuarios(sessaoId, null);
+  }
+
+  abrirModalEditarOpcoesEstimativa() {
+    console.log('oiii');    
   }
 }

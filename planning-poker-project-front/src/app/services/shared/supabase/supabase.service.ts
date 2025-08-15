@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createClient, RealtimeChannel, SupabaseClient } from '@supabase/supabase-js';
 import { environment } from '../../../../enviroments/enviroment';
 import { ISessao } from '../../../interfaces/shared/sessao/sessao';
 import { IUsuario } from '../../../interfaces/shared/usuario/usuario';
@@ -9,9 +9,11 @@ import { SessaoService } from '../../sessao/sessao.service';
   providedIn: 'root'
 })
 export class SupabaseService {
-  private supabase: SupabaseClient;  
-
+  
   private sessaoService = inject(SessaoService);
+  
+  private supabase: SupabaseClient;  
+  private canal: RealtimeChannel | null= null;
 
   constructor() {
     this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
@@ -116,8 +118,10 @@ export class SupabaseService {
     }
   }
 
-  criarCanal(sessaoId: string) {
-     const channel = this.supabase.channel('changes')
+  criarCanal(sessaoId: string): void {
+    console.log('criando canais');
+
+    this.canal = this.supabase.channel('changes')
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
@@ -163,5 +167,9 @@ export class SupabaseService {
         this.sessaoService.mediaEstimativasSessao.set(mediaEstimativasSessao);
       })
     .subscribe();
+  }
+
+  destruirCanal(): void {
+    this.canal?.unsubscribe();
   }
 }

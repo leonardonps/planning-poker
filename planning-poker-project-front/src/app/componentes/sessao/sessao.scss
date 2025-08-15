@@ -48,10 +48,6 @@ h1 {
     width: 100%;
 }
 
-.item {
-    list-style: none;
-}
-
 .navegacao {
     height: 100%;
     width: 25%;
@@ -125,7 +121,7 @@ h1 {
     font-size: 0.75rem;
 }
 
-.usuario-estimativa.dada {
+.usuario-estimativa-selecionada {
     background-color: vars.$cor-secundaria;
     border-color: vars.$cor-secundaria;
     color: vars.$cor-primaria;
@@ -161,13 +157,26 @@ h1 {
 
 #sessao-estimativas {
     display: flex;
-    flex-flow: row wrap;
-    justify-content: center;
-
+    
     width: 85%;
     border: 1px solid lawngreen;
-
+    
     margin-bottom: 3%;
+}
+
+#sessao-estimativas > ul {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+    align-items: center;
+
+    height: 100%;
+    width: 100%;
+    border: 1px solid red;
+}
+
+#sessao-estimativas > ul > li {
+    margin: 0.5%;
 }
 
 .opcao-estimativa {
@@ -180,15 +189,13 @@ h1 {
     width: 4vw;
     min-width: 45px;
 
-    margin: 0.5%;
-
     border: 1px solid vars.$cor-secundaria;
     border-radius: 5px;
 
     font-size: 1rem;
 }
 
-.opcao-estimativa:hover {
+.opcao-estimativa-hover:hover {
     position: relative;
     top: -3px;
  
@@ -198,12 +205,21 @@ h1 {
     cursor: pointer;
 }
 
-.selecionada {
+.opcao-estimativa-selecionada {
     background-color: vars.$cor-secundaria;
     color: vars.$cor-primaria;
     
     position: relative;
     top: -3px;
+}
+
+#editar-opcoes-estimativas {
+    font-family: 'Material Icons';
+
+    height: 7vh;
+    min-height: 40px;
+    width: 3vw;
+    min-width: 35px;
     
-    cursor: pointer;
+    font-size: 100%;
 }

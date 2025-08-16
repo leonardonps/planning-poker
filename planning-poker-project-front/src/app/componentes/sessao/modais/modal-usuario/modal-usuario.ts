@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, ElementRef, inject, OnInit, ViewChild } from "@angular/core";
 import { ModalBase } from "../../../shared/modal-base/modal-base";
-import { gerarId } from "../../../../../utils/geracaoId/gerarId";
+import { gerarId } from "../../../../utils/funcoes/geracaoId/gerarId";
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms";
 import { SupabaseService } from "../../../../services/shared/supabase/supabase.service";
 import { ModalUsuarioService } from "../../../../services/sessao/modal-usuario/modal-usuario.service";

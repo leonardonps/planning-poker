@@ -31,7 +31,7 @@
 </section>
 <section id="sessao-estimativas">
     <ul>
-        @if (!this.mediaEstimativasSessao()) {
+        @if (!this.mediaEstimativasSessao() && this.opcoesEstimativa()) {
             <li><button type="button" class="botao-primario" id="editar-opcoes-estimativas" (click)="abrirModalEditarOpcoesEstimativa()">&#xe3c9;</button></li>
         }
         @for(opcao of this.opcoesEstimativa(); track $index) {              

@@ -1,11 +1,8 @@
-import { ComponentRef, inject, Injectable, ViewContainerRef } from "@angular/core";
+import { ComponentRef, Injectable, ViewContainerRef } from "@angular/core";
 import { ModalUsuario } from "../../../componentes/sessao/modais/modal-usuario/modal-usuario";
-import { SessaoService } from "../sessao.service";
 
 @Injectable({ providedIn: 'root'})
 export class ModalUsuarioService {
-
-    private sessaoService = inject(SessaoService);
 
     private hostRef: ViewContainerRef | undefined;
     private modalUsuarioRef: ComponentRef<ModalUsuario> | undefined;

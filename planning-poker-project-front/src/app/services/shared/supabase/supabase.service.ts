@@ -85,13 +85,13 @@ export class SupabaseService {
      const { data, error } = await this.supabase.from('sessao').select('opcoes_estimativa').eq('id', sessaoId).single();
 
     if (error) {
-      alert(`Erro ao buscar por opções de estimativas de uma sessão:${error.message}`)
+      alert(`Falha ao buscar por opções de estimativas de uma sessão:${error.message}`)
       return;
     }
 
     const opcoesEstimativa = data.opcoes_estimativa;
 
-    this.sessaoService.opcoesEstimativa.set(opcoesEstimativa.split(',').map(Number));
+    this.sessaoService.opcoesEstimativa.set(opcoesEstimativa.split(', ').map(Number));
   }
 
   async atualizarEstimativaUsuario(usuarioId: string, estimativa: number | null): Promise<void> {

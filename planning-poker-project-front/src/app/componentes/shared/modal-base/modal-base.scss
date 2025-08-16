@@ -17,7 +17,7 @@
 #conteudo-modal {
     display: flex;
     flex-flow: column nowrap;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
 
     height: 75vh;
@@ -39,9 +39,11 @@ header {
     height: 10%;
     width: 100%;
 
+    margin-bottom: 3%;
+
     border-bottom: 1px solid vars.$cor-secundaria;
 }
 
 h2 {
-    font-size: 1.5rem;
+    margin-bottom: 2px;
 }

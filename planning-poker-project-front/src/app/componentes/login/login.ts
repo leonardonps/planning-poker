@@ -1,6 +1,6 @@
 import { Component, HostBinding, inject,  } from '@angular/core';
 import { Router,  } from '@angular/router';
-import { gerarId } from '../../../utils/geracaoId/gerarId';
+import { gerarId } from '../../utils/funcoes/geracaoId/gerarId';
 import { opcoesIniciaisEstimativa } from '../../constantes/opcoesIniciaisEstimativa';
 import { ISessao } from '../../interfaces/shared/sessao/sessao';
 import { SupabaseService } from '../../services/shared/supabase/supabase.service';

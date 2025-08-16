@@ -28,7 +28,7 @@ h1 {
 
     padding-left: 1.5%;
 
-    font-size: 1.5rem;
+    font-size: 1.65rem;
 }
 
 #barra-navegacao {
@@ -213,13 +213,17 @@ h1 {
     top: -3px;
 }
 
-#editar-opcoes-estimativas {
-    font-family: 'Material Icons';
+.opcao-estimativa-selecionada:hover {
+    background-color: rgb(230, 230, 230);
+    color: vars.$cor-primaria;
+}
 
+#editar-opcoes-estimativas {
     height: 7vh;
     min-height: 40px;
     width: 3vw;
     min-width: 35px;
     
     font-size: 100%;
+    vertical-align: middle;
 }

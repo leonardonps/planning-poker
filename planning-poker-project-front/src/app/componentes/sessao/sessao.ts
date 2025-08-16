@@ -1,11 +1,17 @@
 import { AfterViewInit, Component, computed, HostBinding, inject, OnDestroy, Signal, ViewChild, ViewContainerRef, WritableSignal } from "@angular/core";
-import { ToastService } from "../../services/shared/toast/toast.service";
+
 import { ActivatedRoute } from "@angular/router";
-import { ModalUsuarioService } from "../../services/sessao/modal-usuario/modal-usuario.service";
-import { SessaoService } from "../../services/sessao/sessao.service";
-import { IUsuario } from "../../interfaces/shared/usuario/usuario";
+
 import { SupabaseService } from "../../services/shared/supabase/supabase.service";
-import { truncarNumero } from "../../../utils/truncarNumero/truncarNumero";
+
+import { SessaoService } from "../../services/sessao/sessao.service";
+import { ModalUsuarioService } from "../../services/sessao/modal-usuario/modal-usuario.service";
+import { ModalOpcoesEstimativaService } from "../../services/sessao/modal-opcoes-estimativa/modal-opcoes-estimativa.service";
+import { ToastService } from "../../services/shared/toast/toast.service";
+
+import { IUsuario } from "../../interfaces/shared/usuario/usuario";
+import { truncarNumero } from "../../utils/funcoes/truncarNumero/truncarNumero";
+
 
 @Component({
   selector: 'app-sessao',
@@ -24,15 +30,18 @@ export class Sessao implements AfterViewInit, OnDestroy {
   private sessaoService = inject(SessaoService);
   
   private modalUsuarioService = inject(ModalUsuarioService);
+  private modalOpcoesEstimativaService = inject(ModalOpcoesEstimativaService);
   private toastService = inject(ToastService);
 
   private sessaoLink = window.location.href;
 
   usuarios: Signal<IUsuario[]> = computed(() => this.sessaoService.usuarios().sort((a,b) => a.nome.localeCompare(b.nome)));
+  
   estimativasUsuarios: Signal<number[]> = computed(() => this.usuarios().filter(usuario => usuario.estimativa !== null).map(usuario => +usuario.estimativa!));
   mediaEstimativasSessao: WritableSignal<number | null> = this.sessaoService.mediaEstimativasSessao;
 
   opcoesEstimativa: WritableSignal<number[] | null> = this.sessaoService.opcoesEstimativa;
+  
   opcaoSelecionada: WritableSignal<number | null> = this.sessaoService.opcaoSelecionada;
 
   ngOnInit() {
@@ -54,6 +63,7 @@ export class Sessao implements AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     this.toastService.registrarHost(this.toastContainerRef);
     this.modalUsuarioService.registrarHost(this.modalContainerRef);
+    this.modalOpcoesEstimativaService.registrarHost(this.modalContainerRef);
 
     this.modalUsuarioService.abrir(); 
   }
@@ -63,6 +73,7 @@ export class Sessao implements AfterViewInit, OnDestroy {
     
     this.toastService.destruirToast();
     this.modalUsuarioService.destruirModal();
+    this.modalOpcoesEstimativaService.destruirModal();
     
     this.supabaseService.destruirCanal();
 
@@ -120,6 +131,6 @@ export class Sessao implements AfterViewInit, OnDestroy {
   }
 
   abrirModalEditarOpcoesEstimativa() {
-    console.log('oiii');    
+    this.modalOpcoesEstimativaService.abrir();    
   }
 }

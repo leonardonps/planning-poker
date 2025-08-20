@@ -41,14 +41,16 @@ export class ModalUsuario implements OnInit, AfterViewInit {
     this.submitted = true;
 
     if (this.formUsuario.valid) {
-      const sessaoId = sessionStorage.getItem('sessaoId');
+      const sessaoId = this.sessaoService.sessao()?.id;
       if (sessaoId) {                 
         try {          
           const usuario = await this.supabaseService.inserirUsuario({
             id: gerarId(8),
             nome: this.formUsuario.controls['nome'].value,                
             observador: this.formUsuario.controls['observador'].value,
-            sessaoId: sessaoId
+            estimativa: null,
+            sessaoId: sessaoId,
+            dataCriacao: null
           });     
 
           if(!usuario) return alert('Falha ao salvar usuário');

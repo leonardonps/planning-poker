@@ -19,7 +19,7 @@ export class ModalOpcoesEstimativa implements OnInit {
   submitted: boolean = false;
 
   ngOnInit(): void {
-    const opcoesEstimativaAtuais = this.sessaoService.opcoesEstimativa()?.toString();
+    const opcoesEstimativaAtuais = this.sessaoService.sessao()?.opcoesEstimativa.toString();
     this.formOpcoesEstimativa = new FormGroup({
       opcoesEstimativa: new FormControl(
         opcoesEstimativaAtuais, 

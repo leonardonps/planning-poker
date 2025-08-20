@@ -19,7 +19,7 @@
     </div>
     <div id="mesa">
         @if (this.estimativasUsuarios().length > 0 && !this.mediaEstimativasSessao()) {
-            <button type="button" class="botao-primario" id="botao-estimar" (click)="calcularEstimativaSessao()">Estimar</button>
+            <button type="button" class="botao-primario" id="botao-estimar" (click)="salvarEstimativaSessao()">Estimar</button>
         } @else if (this.mediaEstimativasSessao()) {
             <p id="media-estimativa-sessao">{{ this.mediaEstimativasSessao()}}</p>
             <button type="button" class="botao-primario" id="botao-reiniciar" (click)="reiniciarEstimativaSessao()">Reiniciar</button>
@@ -50,3 +50,4 @@
 </section>
 <ng-container #toast></ng-container>
 <ng-container #modal></ng-container>
+<ng-container #loading><ng-container>

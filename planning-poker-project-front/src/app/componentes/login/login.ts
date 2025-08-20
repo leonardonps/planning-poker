@@ -21,7 +21,9 @@ export class Login {
     try {
       const sessao: ISessao | null = await this.supabaseService.inserirSessao({
         id: gerarId(6), 
-        opcoesEstimativa: opcoesIniciaisEstimativa
+        opcoesEstimativa: opcoesIniciaisEstimativa,
+        mediaEstimativasSessao: null,
+        dataCriacao: null
       });
 
       if (sessao) {
@@ -30,6 +32,5 @@ export class Login {
     } catch(error) {
       alert('Falha ao criar a sessão');
     }
-  }
-  
+  }  
 }

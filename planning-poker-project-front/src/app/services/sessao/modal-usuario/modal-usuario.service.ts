@@ -1,9 +1,10 @@
-import { ComponentRef, Injectable, ViewContainerRef } from "@angular/core";
+import { ComponentRef, inject, Injectable, ViewContainerRef } from "@angular/core";
 import { ModalUsuario } from "../../../componentes/sessao/modais/modal-usuario/modal-usuario";
+import { SessaoService } from "../sessao.service";
 
 @Injectable({ providedIn: 'root'})
 export class ModalUsuarioService {
-
+    private sessaoService = inject(SessaoService);
     private hostRef: ViewContainerRef | undefined;
     private modalUsuarioRef: ComponentRef<ModalUsuario> | undefined;
     private modalSendoExibido: boolean = false;
@@ -13,7 +14,7 @@ export class ModalUsuarioService {
     }
 
     abrir() {
-        if(!this.hostRef || this.modalSendoExibido || sessionStorage.getItem('usuarioId')) return;
+        if(!this.hostRef || this.modalSendoExibido || this.sessaoService.usuario()?.id) return;
 
         this.modalUsuarioRef = this.hostRef.createComponent(ModalUsuario);
         this.modalSendoExibido = true;

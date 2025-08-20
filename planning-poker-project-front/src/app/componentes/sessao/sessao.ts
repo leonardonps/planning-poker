@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, computed, HostBinding, inject, OnDestroy, Signal, ViewChild, ViewContainerRef, WritableSignal } from "@angular/core";
+import { AfterViewInit, Component, computed, HostBinding, inject, OnDestroy, Signal, ViewChild, ViewContainerRef } from "@angular/core";
 
 import { ActivatedRoute } from "@angular/router";
 
@@ -11,6 +11,7 @@ import { ToastService } from "../../services/shared/toast/toast.service";
 
 import { IUsuario } from "../../interfaces/shared/usuario/usuario";
 import { truncarNumero } from "../../utils/funcoes/truncarNumero/truncarNumero";
+import { LoadingSpinnerService } from "../../services/shared/loading-spinner/loading-spinner.service";
 
 
 @Component({
@@ -32,39 +33,48 @@ export class Sessao implements AfterViewInit, OnDestroy {
   private modalUsuarioService = inject(ModalUsuarioService);
   private modalOpcoesEstimativaService = inject(ModalOpcoesEstimativaService);
   private toastService = inject(ToastService);
+  private loadingSpinnerService = inject(LoadingSpinnerService);
+
 
   private sessaoLink = window.location.href;
 
-  usuarios: Signal<IUsuario[]> = computed(() => this.sessaoService.usuarios().sort((a,b) => a.nome.localeCompare(b.nome)));
-  
-  estimativasUsuarios: Signal<number[]> = computed(() => this.usuarios().filter(usuario => usuario.estimativa !== null).map(usuario => +usuario.estimativa!));
-  mediaEstimativasSessao: WritableSignal<number | null> = this.sessaoService.mediaEstimativasSessao;
+  usuarios: Signal<IUsuario[]> = computed(() =>
+    this.sessaoService.usuarios().sort((a, b) => a.nome.localeCompare(b.nome)));
 
-  opcoesEstimativa: WritableSignal<number[] | null> = this.sessaoService.opcoesEstimativa;
+  estimativasUsuarios: Signal<number[]> = computed(() => this.usuarios().filter(usuario => usuario.estimativa !== null).map(usuario => usuario.estimativa as number));
   
-  opcaoSelecionada: WritableSignal<number | null> = this.sessaoService.opcaoSelecionada;
+  opcoesEstimativa: Signal<number[] | undefined> = computed(() => this.sessaoService.sessao()?.opcoesEstimativa.split(', ').map(Number)); 
+
+  mediaEstimativasSessao: Signal<number | null | undefined> = computed(() => this.sessaoService.sessao()?.mediaEstimativasSessao);
+  
+  opcaoSelecionada: Signal<number | null | undefined> = computed(() => this.sessaoService.usuario()?.estimativa) 
 
   ngOnInit() {
+    this.loadingSpinnerService.exibir();
     const sessaoId = this.route.snapshot.paramMap.get('id');
+    const usuarioId = sessionStorage.getItem('usuarioId');
     const usuarioEstimativa = sessionStorage.getItem('usuarioEstimativa');
 
     if (sessaoId) {
       sessionStorage.setItem('sessaoId', sessaoId);
      
-      this.supabaseService.criarCanal(sessaoId);
-      
-      this.supabaseService.buscarUsuariosSessao(sessaoId);
-      this.supabaseService.buscarOpcoesEstimativaSessao(sessaoId);
+      this.sessaoService.criarCanal(sessaoId);
+    
+      this.sessaoService.setSessao(sessaoId);
+      this.sessaoService.setUsuarios(sessaoId);
     }
 
-    if (usuarioEstimativa) this.opcaoSelecionada.set( +usuarioEstimativa);
+    if (usuarioId) {
+      this.sessaoService.setUsuario(usuarioId);
+     
+      if (usuarioEstimativa) this.sessaoService.atualizarEstimativaUsuario(+usuarioEstimativa);
+    }
   }
 
   ngAfterViewInit() {
     this.toastService.registrarHost(this.toastContainerRef);
     this.modalUsuarioService.registrarHost(this.modalContainerRef);
     this.modalOpcoesEstimativaService.registrarHost(this.modalContainerRef);
-
     this.modalUsuarioService.abrir(); 
   }
 
@@ -75,7 +85,7 @@ export class Sessao implements AfterViewInit, OnDestroy {
     this.modalUsuarioService.destruirModal();
     this.modalOpcoesEstimativaService.destruirModal();
     
-    this.supabaseService.destruirCanal();
+    this.sessaoService.destruirCanal();
 
   }
 
@@ -92,17 +102,16 @@ export class Sessao implements AfterViewInit, OnDestroy {
       }));
   }
 
-  selecionarOpcao(value: number) {
-    const usuarioId = sessionStorage.getItem('usuarioId');
+  selecionarOpcao(value: number) {    
+    const usuario = this.sessaoService.usuario();
+    
+    if (!usuario) return alert('Falha ao encontrar o usuário. Por favor, acesse novamente a sessão.');
 
-    if (!usuarioId) return alert('Usuário sem o id armazenado na sessionStorage');
+    const opcaoSelecionada = value !== usuario.estimativa ? value : null;
 
-    this.opcaoSelecionada.set(this.
-    opcaoSelecionada() === value ? null : value);
+    this.sessaoService.atualizarEstimativaUsuario(opcaoSelecionada);
 
-    const opcaoSelecionada: number | null = this.opcaoSelecionada();
-
-    this.supabaseService.atualizarEstimativaUsuario(usuarioId, this.opcaoSelecionada());
+    this.supabaseService.atualizarEstimativaUsuario(usuario.id, opcaoSelecionada);
 
     if (opcaoSelecionada) 
       sessionStorage.setItem('usuarioEstimativa', opcaoSelecionada.toString());
@@ -110,27 +119,29 @@ export class Sessao implements AfterViewInit, OnDestroy {
       sessionStorage.removeItem('usuarioEstimativa');
   }
 
-  calcularEstimativaSessao() {
-    const sessaoId = sessionStorage.getItem('sessaoId');
+  salvarEstimativaSessao() {
+    const sessao = this.sessaoService.sessao();
 
-    if (!sessaoId) return alert('O id da sessão não está armazenado na sessionStorage');
+    if (!sessao) return alert('Falha ao encontrar a sessão. Por favor, acesse novamente a sessão.');
 
-    const valorInicial: number = 0;
-    const mediaEstimativasSessao: number = this.estimativasUsuarios().reduce((somaEstimativas, estimativa) => somaEstimativas + estimativa, valorInicial)/this.estimativasUsuarios().length;
+    const usuariosEstimativas = this.estimativasUsuarios();
 
-    this.supabaseService.atualizarEstimativaSessao(sessaoId, truncarNumero(mediaEstimativasSessao, 1));
+    const mediaEstimativasSessao = this.sessaoService.calcularEstimativaSessao(usuariosEstimativas);
+
+    this.supabaseService.atualizarEstimativaSessao(sessao.id, truncarNumero(mediaEstimativasSessao, 1));
   }
 
   reiniciarEstimativaSessao() {
-    const sessaoId = sessionStorage.getItem('sessaoId');
+    const sessao = this.sessaoService.sessao();
 
-    if (!sessaoId) return alert('O id da sessão não está armazenado na sessionStorage'); 
+    if (!sessao) return alert('Falha ao encontrar a sessão. Por favor, acesse novamente a sessão.'); 
 
-    this.supabaseService.atualizarEstimativaSessao(sessaoId, null);
-    this.supabaseService.atualizarEstimativasUsuarios(sessaoId, null);
+    this.supabaseService.atualizarEstimativaSessao(sessao.id, null);
+    this.supabaseService.atualizarEstimativasUsuarios(sessao.id, null);
   }
 
   abrirModalEditarOpcoesEstimativa() {
     this.modalOpcoesEstimativaService.abrir();    
   }
+
 }

@@ -1,5 +1,6 @@
 export interface ISessao {
     id: string,
     opcoesEstimativa: string,
-    data_criacao?: string
+    mediaEstimativasSessao: number | null,
+    dataCriacao: string | null
 }

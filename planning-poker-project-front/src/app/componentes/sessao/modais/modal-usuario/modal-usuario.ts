@@ -5,9 +5,8 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from "@angula
 import { SupabaseService } from "../../../../services/shared/supabase/supabase.service";
 import { ModalUsuarioService } from "../../../../services/sessao/modal-usuario/modal-usuario.service";
 import { SessaoService } from "../../../../services/sessao/sessao.service";
-import { ISessao } from "../../../../interfaces/shared/sessao/sessao";
-import { IsActiveMatchOptions } from "@angular/router";
 import { IUsuario } from "../../../../interfaces/shared/usuario/usuario";
+import { ISessao } from "../../../../interfaces/shared/sessao/sessao";
 
 @Component({
   selector: 'app-modal-usuario',
@@ -42,29 +41,26 @@ export class ModalUsuario implements OnInit, AfterViewInit {
 
     if (this.formUsuario.valid) {
       const sessaoId = this.sessaoService.sessao()?.id;
-      if (sessaoId) {                 
-        try {          
-          const usuario = await this.supabaseService.inserirUsuario({
+
+      if(!sessaoId) return alert('Falha ao encontrar id da sessão. Entre novamente na sessão!');
+
+      const novoUsuario: IUsuario = {
             id: gerarId(8),
             nome: this.formUsuario.controls['nome'].value,                
             observador: this.formUsuario.controls['observador'].value,
             estimativa: null,
             sessaoId: sessaoId,
             dataCriacao: null
-          });     
+      }
 
-          if(!usuario) return alert('Falha ao salvar usuário');
+      const usuario: IUsuario | null = await this.sessaoService.criarUsuario(novoUsuario);
 
-          this.sessaoService.usuario.set(usuario);
-
-          sessionStorage.setItem('usuarioId', usuario.id);
-
-          this.modalUsuarioService.destruirModal();
-          this.submitted = false;
-          
-        } catch (error) {
-            alert(`Falha ao criar um usuário: ${error}`);
-        }
+      if (usuario) {
+        this.sessaoService.usuario.set(usuario);
+        sessionStorage.setItem('usuarioId', usuario.id);
+        
+        this.modalUsuarioService.destruirModal();
+        this.submitted = false;
       }
     }
   }

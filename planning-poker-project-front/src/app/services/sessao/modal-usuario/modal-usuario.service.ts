@@ -14,7 +14,7 @@ export class ModalUsuarioService {
     }
 
     abrir() {
-        if(!this.hostRef || this.modalSendoExibido || this.sessaoService.usuario()?.id) return;
+        if(!this.hostRef || this.modalSendoExibido || sessionStorage.getItem('usuarioId')) return;
 
         this.modalUsuarioRef = this.hostRef.createComponent(ModalUsuario);
         this.modalSendoExibido = true;

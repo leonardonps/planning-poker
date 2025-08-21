@@ -144,4 +144,13 @@ export class SupabaseService {
       alert(`Falha ao atualizar estimativa da sessão: ${error}`);
     }
   }
+
+  async atualizarOpcoesEstimativaSessao(sessaoId: string, opcoesEstimativa: string) {
+    const { error } = await this.supabase.from('sessao').update({opcoes_estimativa: opcoesEstimativa}).eq('id', sessaoId);
+
+    if (error) {
+      alert(`Falha ao atualizar opções de estimativa da sessão: ${error}`);
+    }
+  }
+
 }

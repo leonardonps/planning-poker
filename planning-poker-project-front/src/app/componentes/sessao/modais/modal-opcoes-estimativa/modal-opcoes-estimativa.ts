@@ -3,6 +3,8 @@ import { ModalBase } from '../../../shared/modal-base/modal-base';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms";
 import { SessaoService } from '../../../../services/sessao/sessao.service';
 import { opcoesEstimativaValidator } from '../../../../utils/validators/opcoesEstimativa';
+import { SupabaseService } from '../../../../services/shared/supabase/supabase.service';
+import { ModalOpcoesEstimativaService } from '../../../../services/sessao/modal-opcoes-estimativa/modal-opcoes-estimativa.service';
 
 @Component({
   selector: 'app-modal-opcoes-estimativa',
@@ -11,7 +13,10 @@ import { opcoesEstimativaValidator } from '../../../../utils/validators/opcoesEs
   styleUrl: './modal-opcoes-estimativa.scss'
 })
 export class ModalOpcoesEstimativa implements OnInit {
+
+  private modalOpcoesEstimativaService = inject(ModalOpcoesEstimativaService);
   private sessaoService = inject(SessaoService);
+  private supabaseService = inject(SupabaseService);
 
   titulo: string = 'Editar opções de estimativa';
 
@@ -26,8 +31,7 @@ export class ModalOpcoesEstimativa implements OnInit {
         {
           validators:[Validators.required, 
           opcoesEstimativaValidator(/^(0|[1-9]\d*)(\.\d)?(, (0|[1-9]\d*)(\.\d)?)*$/)],
-          updateOn: 'blur'}
-        )
+        })
     });
   }
 
@@ -35,7 +39,13 @@ export class ModalOpcoesEstimativa implements OnInit {
     this.submitted = true;
 
     if(this.formOpcoesEstimativa.valid) {
-      
+      const sessaoId = this.sessaoService.sessao()?.id;
+
+      if (!sessaoId) return alert('Falha ao buscar pelo id da sessão');
+
+      this.supabaseService.atualizarOpcoesEstimativaSessao(sessaoId, this.formOpcoesEstimativa.controls['opcoesEstimativa'].value)  
+  
+      this.modalOpcoesEstimativaService.destruirModal();
     }
   }
 }

@@ -18,6 +18,7 @@ export class SessaoService {
 
     async setSessao(id: string): Promise<void> {
         const sessao: ISessao | null = await this.supabaseService.buscarSessao(id);
+        
         this.sessao.set(sessao);
     }
 
@@ -29,7 +30,28 @@ export class SessaoService {
 
     async setUsuario(id: string): Promise<void> {
         const usuario: IUsuario | null = await this.supabaseService.buscarUsuario(id);
-        if (usuario) this.usuario.set(usuario);
+        
+        this.usuario.set(usuario);
+    }
+
+    async criarUsuario(novoUsuario: IUsuario): Promise<IUsuario |null> {
+        try {
+            const usuario = await this.supabaseService.inserirUsuario(novoUsuario);     
+            
+            return usuario;
+        } catch(error) {
+            return null;
+        }
+    }
+
+    async criarSessao(novaSessao: ISessao): Promise<ISessao | null> {
+        try {
+            const sessao = await this.supabaseService.inserirSessao(novaSessao)
+
+            return sessao;
+        } catch(error) {
+            return null;
+        }
     }
 
     atualizarEstimativaUsuario(estimativa: number | null): void {
@@ -40,12 +62,21 @@ export class SessaoService {
         this.usuario.set(usuario);
     }
 
-    calcularEstimativaSessao(estimativasSessao: number[]): number { 
+    calcularMediaEstimativasSessao(estimativasSessao: number[]): number { 
         const valorInicial: number = 0;
         
         const mediaEstimativasSessao: number = estimativasSessao.reduce((somaEstimativas, estimativa) => somaEstimativas + estimativa, valorInicial)/estimativasSessao.length;
         
         return mediaEstimativasSessao;
+    }
+
+    // To do
+    editarOpcoesEstimativaSessao(opcoesEstimativa: string): void {
+        let sessao = this.sessao();
+
+        if(sessao) sessao = {...sessao, opcoesEstimativa}
+
+        this.sessao.set(sessao);
     }
 
     criarCanal(sessaoId: string): void {
@@ -95,6 +126,8 @@ export class SessaoService {
         }, (payload) => {
             const mediaEstimativasSessao: number | null = payload.new['media_estimativas_sessao'];
 
+            const opcoesEstimativa: string = payload.new['opcoes_estimativa'];
+
             if (mediaEstimativasSessao == null) {
                 if (sessionStorage.getItem('usuarioEstimativa')) sessionStorage.removeItem('usuarioEstimativa');
 
@@ -103,7 +136,7 @@ export class SessaoService {
 
             let sessao = this.sessao();
 
-            if (sessao) sessao = {...sessao, mediaEstimativasSessao: mediaEstimativasSessao};
+            if (sessao) sessao = {...sessao, opcoesEstimativa: opcoesEstimativa,mediaEstimativasSessao: mediaEstimativasSessao};
 
             this.sessao.set(sessao);
         })

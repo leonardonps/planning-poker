@@ -35,7 +35,6 @@ export class Sessao implements AfterViewInit, OnDestroy {
   private toastService = inject(ToastService);
   private loadingSpinnerService = inject(LoadingSpinnerService);
 
-
   private sessaoLink = window.location.href;
 
   usuarios: Signal<IUsuario[]> = computed(() =>
@@ -51,18 +50,20 @@ export class Sessao implements AfterViewInit, OnDestroy {
 
   ngOnInit() {
     this.loadingSpinnerService.exibir();
+    
     const sessaoId = this.route.snapshot.paramMap.get('id');
     const usuarioId = sessionStorage.getItem('usuarioId');
     const usuarioEstimativa = sessionStorage.getItem('usuarioEstimativa');
 
-    if (sessaoId) {
-      sessionStorage.setItem('sessaoId', sessaoId);
-     
-      this.sessaoService.criarCanal(sessaoId);
+    if (!sessaoId) return alert(`Não foi possível achar o id da sessão`);
+
+    sessionStorage.setItem('sessaoId', sessaoId);
     
-      this.sessaoService.setSessao(sessaoId);
-      this.sessaoService.setUsuarios(sessaoId);
-    }
+    this.sessaoService.criarCanal(sessaoId);
+  
+    this.sessaoService.setSessao(sessaoId);
+    this.sessaoService.setUsuarios(sessaoId);
+    
 
     if (usuarioId) {
       this.sessaoService.setUsuario(usuarioId);
@@ -75,6 +76,7 @@ export class Sessao implements AfterViewInit, OnDestroy {
     this.toastService.registrarHost(this.toastContainerRef);
     this.modalUsuarioService.registrarHost(this.modalContainerRef);
     this.modalOpcoesEstimativaService.registrarHost(this.modalContainerRef);
+
     this.modalUsuarioService.abrir(); 
   }
 
@@ -86,7 +88,6 @@ export class Sessao implements AfterViewInit, OnDestroy {
     this.modalOpcoesEstimativaService.destruirModal();
     
     this.sessaoService.destruirCanal();
-
   }
 
   copiarSessaoLink() {
@@ -126,7 +127,7 @@ export class Sessao implements AfterViewInit, OnDestroy {
 
     const usuariosEstimativas = this.estimativasUsuarios();
 
-    const mediaEstimativasSessao = this.sessaoService.calcularEstimativaSessao(usuariosEstimativas);
+    const mediaEstimativasSessao = this.sessaoService.calcularMediaEstimativasSessao(usuariosEstimativas);
 
     this.supabaseService.atualizarEstimativaSessao(sessao.id, truncarNumero(mediaEstimativasSessao, 1));
   }

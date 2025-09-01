@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
-import { Login } from './componentes/login/login';
-import { Sessao } from './componentes/sessao/sessao';
+import { Login } from './components/login/login';
+import { Sessao } from './components/sessao/sessao';
+import { sessaoGuard } from './guards/sessao.guard';
 
 export const routes: Routes = [
     {
@@ -9,6 +10,11 @@ export const routes: Routes = [
     },
     {
         path: 'sessao/:id',
-        component: Sessao
+        component: Sessao,
+        canActivate:[sessaoGuard]
+    },
+    {
+        path: '**',
+        redirectTo: ''
     }
 ];

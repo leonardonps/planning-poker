@@ -148,9 +148,17 @@ export class SupabaseService {
   async atualizarOpcoesEstimativaSessao(sessaoId: string, opcoesEstimativa: string) {
     const { error } = await this.supabase.from('sessao').update({opcoes_estimativa: opcoesEstimativa}).eq('id', sessaoId);
 
-    if (error) {
+    if (error) 
       alert(`Falha ao atualizar opções de estimativa da sessão: ${error}`);
-    }
+    
+  }
+
+  async removerUsuarioSessao(usuarioId: string) {
+    const { error } = await this.supabase.from('usuario').delete().eq('id', usuarioId);
+
+    if (error) 
+      alert(`Falha ao atualizar opções de estimativa da sessão: ${error}`);
+
   }
 
 }

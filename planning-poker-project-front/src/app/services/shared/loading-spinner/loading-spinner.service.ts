@@ -1,7 +1,7 @@
 import { inject, Injectable } from "@angular/core";
 import { Overlay, OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
-import { LoadingSpinner } from "../../../componentes/shared/loading-spinner/loading-spinner";
+import { LoadingSpinner } from "../../../components/shared/loading-spinner/loading-spinner";
 
 @Injectable(
     { providedIn: 'root'}

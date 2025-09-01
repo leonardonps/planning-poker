@@ -2,9 +2,9 @@ import { Component, inject, OnInit } from '@angular/core';
 import { ModalBase } from '../../../shared/modal-base/modal-base';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms";
 import { SessaoService } from '../../../../services/sessao/sessao.service';
-import { opcoesEstimativaValidator } from '../../../../utils/validators/opcoesEstimativa';
 import { SupabaseService } from '../../../../services/shared/supabase/supabase.service';
 import { ModalOpcoesEstimativaService } from '../../../../services/sessao/modal-opcoes-estimativa/modal-opcoes-estimativa.service';
+import { opcoesEstimativaValidator } from '../../../../validators/opcoesEstimativa';
 
 @Component({
   selector: 'app-modal-opcoes-estimativa',

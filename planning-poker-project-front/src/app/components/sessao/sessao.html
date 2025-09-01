@@ -19,20 +19,20 @@
     </div>
     <div id="mesa">
         @if (this.estimativasUsuarios().length > 0 && !this.mediaEstimativasSessao()) {
-            <button type="button" class="botao-primario" id="botao-estimar" (click)="salvarEstimativaSessao()">Estimar</button>
+            <button type="button" class="botao-primario" id="botao-estimar" (click)="calcularEstimativaSessao()">Estimar</button>
         } @else if (this.mediaEstimativasSessao()) {
             <p id="media-estimativa-sessao">{{ this.mediaEstimativasSessao()}}</p>
             <button type="button" class="botao-primario" id="botao-reiniciar" (click)="reiniciarEstimativaSessao()">Reiniciar</button>
         } 
         @else {
-            <p id="mensagem-estimativa-obrigatoria">Pelo menos, um usuário precisa colocar sua estimativa</p>
+            <p id="mensagem-estimativa-obrigatoria">Pelo menos, um participante precisa selecionar sua estimativa</p>
         }
     </div>
 </section>
 <section id="sessao-estimativas">
     <ul>
         @if (!this.mediaEstimativasSessao() && this.opcoesEstimativa()) {
-            <li><button type="button" class="botao-primario" id="editar-opcoes-estimativas" (click)="abrirModalEditarOpcoesEstimativa()">&#xe3c9;</button></li>
+            <li><button type="button" class="botao-primario material-icons" id="editar-opcoes-estimativas" (click)="abrirModalEditarOpcoesEstimativa()">edit</button></li>
         }
         @for(opcao of this.opcoesEstimativa(); track $index) {              
             <li>
@@ -42,7 +42,7 @@
                     [class.opcao-estimativa-selecionada]="opcao === this.opcaoSelecionada()"
                     [class.opcao-estimativa-hover]="!this.mediaEstimativasSessao()"
                     [disabled]="this.mediaEstimativasSessao()"
-                    (click)="selecionarOpcao(opcao)"
+                    (click)="selecionarEstimativa(opcao)"
                 >{{ opcao }}</button>
             </li> 
         }

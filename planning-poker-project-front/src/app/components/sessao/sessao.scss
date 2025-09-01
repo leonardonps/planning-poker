@@ -1,4 +1,4 @@
-@use 'styles' as vars;
+@use 'cores' as *;
 
 :host {
     height: 100%;
@@ -105,10 +105,10 @@ h1 {
     width: 65%;
     height: 75%;
     
-    border: 1px dashed vars.$cor-terciaria;
+    border: 1px dashed $cor-terciaria;
     border-radius: 5px;
     
-    color: vars.$cor-terciaria;
+    color: $cor-terciaria;
 }
 
 .usuario-nome {
@@ -117,14 +117,20 @@ h1 {
     justify-content: center;
     align-items: center;
 
+    height: 25%;
     width: 100%;
+
     font-size: 0.75rem;
 }
 
+.usuario-nome > strong {
+    text-align: center;    
+}
+
 .usuario-estimativa-selecionada {
-    background-color: vars.$cor-secundaria;
-    border-color: vars.$cor-secundaria;
-    color: vars.$cor-primaria;
+    background-color: $cor-secundaria;
+    border-color: $cor-secundaria;
+    color: $cor-primaria;
 }
 
 #mesa {
@@ -138,7 +144,9 @@ h1 {
     width: 20%;
     min-width: 270px;
 
-    border: 1px solid vars.$cor-secundaria;
+    padding: 1%;
+
+    border: 1px solid $cor-secundaria;
     border-radius: 10px;
 }
 
@@ -151,7 +159,7 @@ h1 {
 }
 
 #botao-estimar, #botao-reiniciar {
-    height: 20%;
+    height: 30%;
     width: 50%;
 }
 
@@ -189,7 +197,7 @@ h1 {
     width: 4vw;
     min-width: 45px;
 
-    border: 1px solid vars.$cor-secundaria;
+    border: 1px solid $cor-secundaria;
     border-radius: 5px;
 
     font-size: 1rem;
@@ -199,15 +207,15 @@ h1 {
     position: relative;
     top: -3px;
  
-    background-color: vars.$cor-quartenaria;
-    color: vars.$cor-secundaria;
+    background-color: $cor-quartenaria;
+    color: $cor-secundaria;
 
     cursor: pointer;
 }
 
 .opcao-estimativa-selecionada {
-    background-color: vars.$cor-secundaria;
-    color: vars.$cor-primaria;
+    background-color: $cor-secundaria;
+    color: $cor-primaria;
     
     position: relative;
     top: -3px;
@@ -215,7 +223,7 @@ h1 {
 
 .opcao-estimativa-selecionada:hover {
     background-color: rgb(230, 230, 230);
-    color: vars.$cor-primaria;
+    color: $cor-primaria;
 }
 
 #editar-opcoes-estimativas {
@@ -223,7 +231,6 @@ h1 {
     min-height: 40px;
     width: 3vw;
     min-width: 35px;
-    
+
     font-size: 100%;
-    vertical-align: middle;
 }

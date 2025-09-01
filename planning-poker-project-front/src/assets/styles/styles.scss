@@ -1,0 +1,21 @@
+/* You can add global styles to this file, and also import other style files */
+
+@use 'index' as *;
+
+* {
+    margin: 0px;
+    padding: 0px;
+    font-family: 'Roboto', 'Material Icons';
+    box-sizing: border-box;
+    color: $cor-secundaria;
+    background-color: $cor-primaria;
+}
+
+body {
+    height: 100vh;
+    width: 100vw;
+}
+
+li {
+    list-style: none;
+}

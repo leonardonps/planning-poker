@@ -1,5 +1,5 @@
 import { ComponentRef, Injectable, ViewContainerRef } from "@angular/core";
-import { Toast } from "../../../componentes/shared/toast/toast";
+import { Toast } from "../../../components/shared/toast/toast";
 
 
 export interface ToastConfig {

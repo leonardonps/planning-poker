@@ -1,5 +1,5 @@
 import { ComponentRef, Injectable, ViewContainerRef } from "@angular/core";
-import { ModalOpcoesEstimativa } from "../../../componentes/sessao/modais/modal-opcoes-estimativa/modal-opcoes-estimativa";
+import { ModalOpcoesEstimativa } from "../../../components/sessao/modais/modal-opcoes-estimativa/modal-opcoes-estimativa";
 
 @Injectable({ providedIn: 'root'}) 
 export class ModalOpcoesEstimativaService {

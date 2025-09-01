@@ -6,13 +6,11 @@ import { SupabaseService } from "../../services/shared/supabase/supabase.service
 
 import { SessaoService } from "../../services/sessao/sessao.service";
 import { ModalUsuarioService } from "../../services/sessao/modal-usuario/modal-usuario.service";
+import { LoadingSpinnerService } from "../../services/shared/loading-spinner/loading-spinner.service";
 import { ModalOpcoesEstimativaService } from "../../services/sessao/modal-opcoes-estimativa/modal-opcoes-estimativa.service";
 import { ToastService } from "../../services/shared/toast/toast.service";
 
 import { IUsuario } from "../../interfaces/shared/usuario/usuario";
-import { truncarNumero } from "../../utils/funcoes/truncarNumero/truncarNumero";
-import { LoadingSpinnerService } from "../../services/shared/loading-spinner/loading-spinner.service";
-
 
 @Component({
   selector: 'app-sessao',
@@ -58,26 +56,14 @@ export class Sessao implements AfterViewInit, OnDestroy {
     if (!sessaoId) return alert(`Não foi possível achar o id da sessão`);
 
     sessionStorage.setItem('sessaoId', sessaoId);
-    
-    this.sessaoService.criarCanal(sessaoId);
-  
-    this.sessaoService.setSessao(sessaoId);
-    this.sessaoService.setUsuarios(sessaoId);
-    
 
-    if (usuarioId) {
-      this.sessaoService.setUsuario(usuarioId);
-     
-      if (usuarioEstimativa) this.sessaoService.atualizarEstimativaUsuario(+usuarioEstimativa);
-    }
+    this.sessaoService.criarCanalSessao(sessaoId, usuarioId, usuarioEstimativa);
   }
 
   ngAfterViewInit() {
     this.toastService.registrarHost(this.toastContainerRef);
     this.modalUsuarioService.registrarHost(this.modalContainerRef);
     this.modalOpcoesEstimativaService.registrarHost(this.modalContainerRef);
-
-    this.modalUsuarioService.abrir(); 
   }
 
   ngOnDestroy() {
@@ -91,58 +77,24 @@ export class Sessao implements AfterViewInit, OnDestroy {
   }
 
   copiarSessaoLink() {
-    navigator
-      .clipboard
-      .writeText(this.sessaoLink)
-      .then( _ => this.toastService.exibir({
-        mensagem: 'Link copiado para a área de transferência'
-      })        
-      )
-      .catch(err => this.toastService.exibir({
-        mensagem: `Falha ao copiar link para a área de transferência: ${err}`
-      }));
+    this.sessaoService.copiarSessaoLink(this.sessaoLink);
   }
 
-  selecionarOpcao(value: number) {    
-    const usuario = this.sessaoService.usuario();
-    
-    if (!usuario) return alert('Falha ao encontrar o usuário. Por favor, acesse novamente a sessão.');
-
-    const opcaoSelecionada = value !== usuario.estimativa ? value : null;
-
-    this.sessaoService.atualizarEstimativaUsuario(opcaoSelecionada);
-
-    this.supabaseService.atualizarEstimativaUsuario(usuario.id, opcaoSelecionada);
-
-    if (opcaoSelecionada) 
-      sessionStorage.setItem('usuarioEstimativa', opcaoSelecionada.toString());
-    else 
-      sessionStorage.removeItem('usuarioEstimativa');
+  selecionarEstimativa(opcao: number) {    
+    this.sessaoService.atualizarEstimativaUsuario(opcao);
   }
 
-  salvarEstimativaSessao() {
-    const sessao = this.sessaoService.sessao();
+  calcularEstimativaSessao() {
+    const estimativasUsuarios = this.estimativasUsuarios();
 
-    if (!sessao) return alert('Falha ao encontrar a sessão. Por favor, acesse novamente a sessão.');
-
-    const usuariosEstimativas = this.estimativasUsuarios();
-
-    const mediaEstimativasSessao = this.sessaoService.calcularMediaEstimativasSessao(usuariosEstimativas);
-
-    this.supabaseService.atualizarEstimativaSessao(sessao.id, truncarNumero(mediaEstimativasSessao, 1));
+    this.sessaoService.atualizarMediaEstimativaSessao(estimativasUsuarios);
   }
 
   reiniciarEstimativaSessao() {
-    const sessao = this.sessaoService.sessao();
-
-    if (!sessao) return alert('Falha ao encontrar a sessão. Por favor, acesse novamente a sessão.'); 
-
-    this.supabaseService.atualizarEstimativaSessao(sessao.id, null);
-    this.supabaseService.atualizarEstimativasUsuarios(sessao.id, null);
+    this.sessaoService.reiniciarEstimativaSessao();
   }
 
   abrirModalEditarOpcoesEstimativa() {
     this.modalOpcoesEstimativaService.abrir();    
   }
-
 }

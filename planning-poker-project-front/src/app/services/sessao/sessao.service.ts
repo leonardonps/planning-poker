@@ -22,15 +22,24 @@ export class SessaoService {
     sessao: WritableSignal<ISessao | null> = signal(null);
     usuarios: WritableSignal<IUsuario[]> = signal([]);
     usuario: WritableSignal<IUsuario | null> = signal(null);
+    canalId: WritableSignal<string> = signal('');
 
     criarCanalSessao(sessaoId: string, usuarioId: string | null, usuarioEstimativa: string | null): void {
-        this.canal = this.supabaseService.supabase.channel(`sessao-${sessaoId}`);
+        this.canalId.set(gerarId(8));
+        
+        this.canal = this.supabaseService.supabase.channel(`sessao-${sessaoId}`, {
+            config: {
+                presence: {
+                    key: this.canalId()
+                }
+            }
+        });
 
         this.canal.on('presence', {
             event: 'sync'
         }, () => {
-            const newState = this.canal?.presenceState();
-            console.log('sync', newState);
+            // const newState = this.canal?.presenceState();
+            // console.log('sync', newState);
         })
         .on('presence', {
             event: 'join'
@@ -39,8 +48,12 @@ export class SessaoService {
         })
         .on('presence', {
             event: 'leave'
-        }, ({key, leftPresences}) => {
-            console.log('leave', key, leftPresences)
+        }, async ({key, leftPresences}) => {
+            console.log('leave', key, leftPresences);
+            const usuarios = this.usuarios().filter(usuario => usuario.id !== key);
+
+            await this.supabaseService.removerUsuarioSessao(key);
+            this.usuarios.set(usuarios);
         })
         .on('postgres_changes', {
             event: 'INSERT',
@@ -98,28 +111,14 @@ export class SessaoService {
             if (sessao) sessao = {...sessao, opcoesEstimativa: opcoesEstimativa, mediaEstimativasSessao: mediaEstimativasSessao};
 
             this.sessao.set(sessao);
-        }).on('postgres_changes', {
-            event: 'DELETE',
-            schema: 'public',
-            table: 'usuario',
-            filter: `sessao_id=eq.${sessaoId}}`
-        }, (payload) => {
-            const usuarioRemovido = payload.old;
-            const usuarios = this.usuarios().filter(usuario => usuario.id !== usuarioRemovido['id']);
-
-            this.usuarios.set(usuarios);
         })
         .subscribe(async (status) => {
-            if (status === 'SUBSCRIBED') {
-        
-                const presenceTrackStatus = await this.canal?.track({
-                    id: gerarId(10)
+            if (status === 'SUBSCRIBED') {                
+                await this.canal?.track({
+                    id: this.canalId()
                 });
-                console.log(presenceTrackStatus);
 
                 this.inicializarSessao(sessaoId, usuarioId, usuarioEstimativa);
-                this.loadingSpinnerService.fechar();
-                this.modalUsuarioService.abrir();
             }
         });
     }
@@ -129,14 +128,21 @@ export class SessaoService {
         this.canal = null;
     }
 
-    inicializarSessao(sessaoId: string, usuarioId: string | null, usuarioEstimativa: string | null) {
-        this.setSessao(sessaoId);
-        this.setUsuarios(sessaoId);
-                
-        if (usuarioId) this.setUsuario(usuarioId);
-        if (usuarioEstimativa) this.setEstimativaUsuario(+usuarioEstimativa);
-    }
+    async inicializarSessao(sessaoId: string, usuarioId: string | null, usuarioEstimativa: string | null) {
+        try {
+            await this.setSessao(sessaoId);
+            await this.setUsuarios(sessaoId);
+                    
+            if (usuarioId) await this.setUsuario(usuarioId);
+            
+            if (usuarioEstimativa) this.setEstimativaUsuario(+usuarioEstimativa);
 
+            this.loadingSpinnerService.fechar();
+            this.modalUsuarioService.abrir();
+        } catch (error) {
+            alert(`Falha ao inicializar a sessão: ${error}`)
+        }
+    }
 
     atualizarEstimativaUsuario(opcao: number) {
         const usuario = this.usuario();

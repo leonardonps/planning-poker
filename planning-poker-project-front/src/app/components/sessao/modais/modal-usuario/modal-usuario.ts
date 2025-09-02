@@ -41,11 +41,14 @@ export class ModalUsuario implements OnInit, AfterViewInit {
 
     if (this.formUsuario.valid) {
       const sessaoId = this.sessaoService.sessao()?.id;
+      const canalId = this.sessaoService.canalId();
 
       if(!sessaoId) return alert('Falha ao encontrar id da sessão. Entre novamente na sessão!');
 
+      if(!canalId) return alert('Falha ao encontrar o id do canal da sessão no Supabase. Entre novamente na sessão!');
+
       const novoUsuario: IUsuario = {
-            id: gerarId(8),
+            id: canalId,
             nome: this.formUsuario.controls['nome'].value,                
             observador: this.formUsuario.controls['observador'].value,
             estimativa: null,

@@ -1,0 +1,28 @@
+@use 'cores' as *;
+
+.toast-container {
+    display: flex;
+    align-items: center;
+    
+    position: fixed;
+
+    height: 6vh;
+
+    bottom: 3vh;
+    right: 3vh;
+
+    background-color: $cor-secundaria;
+    
+    padding: 10px;
+    border-radius: 5px;
+        
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    z-index: 1000;
+}
+
+.toast-conteudo {
+    background-color: $cor-secundaria;
+    color: $cor-primaria;
+
+    font-size: 1rem;
+}

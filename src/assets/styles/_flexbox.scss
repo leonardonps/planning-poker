@@ -1,0 +1,27 @@
+
+.flex-column {
+    display: flex;
+    flex-direction: column;
+    
+    height: 100%;
+    width: 100%;
+    
+    border: 1px solid red;
+}
+
+.justify-content-center {
+    justify-content: center;
+}
+
+.justify-content-space-between {
+    justify-content: space-between;
+}
+
+.align-items-center {
+    align-items: center;
+}
+
+.center-space-around{
+    align-items: center;
+    justify-content: center;
+}

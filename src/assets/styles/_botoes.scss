@@ -1,0 +1,28 @@
+@use 'cores' as *;
+
+.botao-primario {
+    background-color: $cor-primaria;
+    
+    border: 1px solid $cor-secundaria;
+    border-radius: 10px;
+
+    padding: 1%;
+}
+
+.botao-primario:hover {
+    background-color: $cor-secundaria;
+    color: $cor-primaria;
+    
+    cursor: pointer;
+}
+
+.botao-primario:visited, .botao-primario:active {
+    text-decoration: none;
+}
+
+.botao-primario-desabilitado, .botao-primario-desabilitado:hover {
+    cursor: not-allowed;
+    background-color: $cor-primaria;
+    border-color: $cor-terciaria;
+    color: $cor-terciaria;
+}

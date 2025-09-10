@@ -1,0 +1,236 @@
+@use 'cores' as *;
+
+:host {
+    height: 100%;
+    width: 100%;
+}
+
+header {  
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-between;  
+    align-items: center;
+    
+    height: 13%;
+    min-height: 70px;
+    width: 100%;
+
+    padding: 1%;
+    border: 1px solid lime;
+}
+
+h1 {
+    display: flex;
+    align-items: center;
+
+    height: 100%;
+    width: 40%;
+
+    padding-left: 1.5%;
+
+    font-size: 1.65rem;
+}
+
+#barra-navegacao {
+    display: flex;
+    flex-direction: row-reverse wrap;
+
+    height: 100%;
+    width: 60%;
+}
+
+#barra-navegacao > ul {
+    display: flex;
+    flex-flow: row-reverse wrap;
+    align-items: center;
+    
+    height: 100%;
+    width: 100%;
+}
+
+.navegacao {
+    height: 100%;
+    width: 25%;
+    min-width: 150px;
+
+    padding-right: 1.5%;
+}
+
+.navegacao > button {
+    height: 100%;
+    width: 100%;
+
+    font-size: 1em;
+}
+
+#sessao-principal {
+    display: flex;
+    flex-flow: column;
+    justify-content: space-evenly;
+    align-items: center;
+
+    height: 74%;
+    min-height: 300px;
+    width: 100%;
+    border: 1px solid purple;
+}
+
+.usuarios {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+    
+    width: 85%;
+
+    border: 1px solid seagreen;
+}
+
+.usuario {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: space-between;
+    align-items: center;
+    
+    height: 17vh;
+    min-height: 82px;
+    width: 7vw;
+    min-width: 60px;
+}
+
+.usuario-estimativa {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    width: 65%;
+    height: 75%;
+    
+    border: 1px dashed $cor-terciaria;
+    border-radius: 5px;
+    
+    color: $cor-terciaria;
+}
+
+.usuario-nome {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+    align-items: center;
+
+    height: 25%;
+    width: 100%;
+
+    font-size: 0.75rem;
+}
+
+.usuario-nome > strong {
+    text-align: center;    
+}
+
+.usuario-estimativa-selecionada {
+    background-color: $cor-secundaria;
+    border-color: $cor-secundaria;
+    color: $cor-primaria;
+}
+
+#mesa {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: center;
+    align-items: center;
+
+    height: 35%;
+    min-height: 125px;
+    width: 20%;
+    min-width: 270px;
+
+    padding: 1%;
+
+    border: 1px solid $cor-secundaria;
+    border-radius: 10px;
+}
+
+#mesa > p {
+   text-align: center;
+}
+
+#mesa > #media-estimativa-sessao {
+    margin-bottom: 5%;
+}
+
+#botao-estimar, #botao-reiniciar {
+    height: 30%;
+    width: 50%;
+}
+
+#sessao-estimativas {
+    display: flex;
+    
+    width: 85%;
+    border: 1px solid lawngreen;
+    
+    margin-bottom: 3%;
+}
+
+#sessao-estimativas > ul {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+    align-items: center;
+
+    height: 100%;
+    width: 100%;
+    border: 1px solid red;
+}
+
+#sessao-estimativas > ul > li {
+    margin: 0.5%;
+}
+
+.opcao-estimativa {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    height: 13vh;
+    min-height: 70px;
+    width: 4vw;
+    min-width: 45px;
+
+    border: 1px solid $cor-secundaria;
+    border-radius: 5px;
+
+    font-size: 1rem;
+}
+
+.opcao-estimativa-hover:hover {
+    position: relative;
+    top: -3px;
+ 
+    background-color: $cor-quartenaria;
+    color: $cor-secundaria;
+
+    cursor: pointer;
+}
+
+.opcao-estimativa-selecionada {
+    background-color: $cor-secundaria;
+    color: $cor-primaria;
+    
+    position: relative;
+    top: -3px;
+}
+
+.opcao-estimativa-selecionada:hover {
+    background-color: rgb(230, 230, 230);
+    color: $cor-primaria;
+}
+
+#editar-opcoes-estimativas {
+    height: 7vh;
+    min-height: 40px;
+    width: 3vw;
+    min-width: 35px;
+
+    font-size: 100%;
+}

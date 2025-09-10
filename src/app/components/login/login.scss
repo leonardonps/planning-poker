@@ -1,0 +1,26 @@
+@use 'cores' as *;
+
+:host {
+    height: 100%;
+    width: 100%;
+}
+
+h1 {
+    height: 20%;
+    min-height: 125px;
+    width: 55%;
+
+    margin-bottom: 8vh;
+
+    font-size: 3rem;
+    text-align: center;
+}
+
+#nova-sessao {
+    height: 10vh;
+    min-height: 60px;
+    width: 35%;
+    min-width: 360px;
+        
+    font-size: 1.1rem;
+}

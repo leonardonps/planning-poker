@@ -22,8 +22,12 @@ export class ModalUsuario implements OnInit, AfterViewInit {
   modalUsuarioService = inject(ModalUsuarioService);
 
   titulo: string = 'Novo usuário';
-  submitted: boolean = false;
+
   formUsuario!: FormGroup;
+  
+  submitted: boolean = false;
+  desabilitado: boolean = false;
+
 
   ngOnInit(): void {
     this.formUsuario = new FormGroup({
@@ -40,6 +44,7 @@ export class ModalUsuario implements OnInit, AfterViewInit {
     this.submitted = true;
 
     if (this.formUsuario.valid) {
+      this.desabilitado = true;
       const sessaoId = this.sessaoService.sessao()?.id;
       const canalId = this.sessaoService.canalId();
 

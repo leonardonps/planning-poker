@@ -22,6 +22,7 @@ export class ModalOpcoesEstimativa implements OnInit {
 
   formOpcoesEstimativa!: FormGroup;
   submitted: boolean = false;
+  desabilitado: boolean = false;
 
   ngOnInit(): void {
     const opcoesEstimativaAtuais = this.sessaoService.sessao()?.opcoesEstimativa.toString();
@@ -39,6 +40,8 @@ export class ModalOpcoesEstimativa implements OnInit {
     this.submitted = true;
 
     if(this.formOpcoesEstimativa.valid) {
+      this.desabilitado = true;
+
       const sessaoId = this.sessaoService.sessao()?.id;
 
       if (!sessaoId) return alert('Falha ao buscar pelo id da sessão');

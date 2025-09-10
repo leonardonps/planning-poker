@@ -18,6 +18,12 @@
                 }
             </div>
         </div>
-        <button type="submit" id="salvar" class="botao-primario" (click)="salvar()">Salvar</button>
+        <button 
+            type="submit" 
+            id="salvar" 
+            class="botao-primario"   
+            [class.botao-primario-desabilitado]="this.desabilitado"
+            [disabled]="this.desabilitado"    
+            (click)="salvar()">Salvar</button>
     </form>
 </app-modal-base>

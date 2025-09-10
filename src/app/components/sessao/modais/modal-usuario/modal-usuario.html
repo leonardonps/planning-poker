@@ -27,6 +27,12 @@
                 <input type="checkbox" id="observador" formControlName="observador">
             </div>
         </div>
-        <button type="submit" id="salvar" class="botao-primario">Salvar</button>
+        <button 
+            type="submit" 
+            id="salvar" 
+            class="botao-primario"     
+            [class.botao-primario-desabilitado]="this.desabilitado"
+            [disabled]="this.desabilitado"
+        >Salvar</button>
     </form>
 </app-modal-base>

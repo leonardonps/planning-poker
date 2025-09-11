@@ -29,7 +29,7 @@ export class SessaoService {
     usuario: WritableSignal<IUsuario | null> = signal(null);
     canalId: WritableSignal<string> = signal(gerarId(8));
 
-    criarCanalSessao(sessaoId: string, usuarioId: string | null): void {        
+    async criarCanalSessao(sessaoId: string, usuarioId: string | null): Promise<void> {        
         this.canal = this.supabaseService.supabase.channel(`sessao-${sessaoId}`, {
             config: {
                 presence: {
@@ -41,8 +41,14 @@ export class SessaoService {
         this.canal
             .on('presence', {
                 event: 'sync'
-            }, async () => {
+            }, () => {
                 this.atualizarUsuariosPresentes();
+            })
+            .on('presence', {
+                event: 'join'
+            }, () => {     
+                this.loadingSpinnerService.fechar();
+                this.modalUsuarioService.abrir();           
             })
             .on('postgres_changes', {
                 event: 'INSERT',
@@ -101,16 +107,11 @@ export class SessaoService {
 
                 this.sessao.set(sessao);
             })
-            .subscribe(async (status) => {
-                if (status === 'SUBSCRIBED') {
-                    await this.canal?.track({
-                        id: this.canalId()
-                    });
+            .subscribe();
 
-                    this.loadingSpinnerService.fechar();
-                    this.modalUsuarioService.abrir();           
-                }
-            });
+        await this.canal?.track({
+            id: this.canalId()
+        });
     }
     
     destruirCanal(): void {

@@ -12,15 +12,15 @@
     <div class="usuarios">
         @for(usuario of this.usuariosPresentes(); track $index; let i = $index) {
              <div class="usuario">
-                 <div class="usuario-estimativa"[class.usuario-estimativa-selecionada]="usuario.estimativa!== null">{{ this.mediaEstimativasSessao() ? usuario.estimativa : '?'}}</div>
+                 <div class="usuario-estimativa"[class.usuario-estimativa-selecionada]="usuario.estimativa!== null">{{ (this.mediaEstimativasSessao() || this.mediaEstimativasSessao() === 0) ? usuario.estimativa : '?'}}</div>
                  <div class="usuario-nome"><strong>{{ usuario.nome }}</strong></div>
              </div>
         }
     </div>
     <div id="mesa">
-        @if (this.estimativasUsuarios().length > 0 && !this.mediaEstimativasSessao()) {
+        @if (this.estimativasUsuarios().length > 0 && !this.mediaEstimativasSessao() && this.mediaEstimativasSessao() !== 0) {
             <button type="button" class="botao-primario" id="botao-estimar" (click)="calcularEstimativaSessao()">Estimar</button>
-        } @else if (this.mediaEstimativasSessao()) {
+        } @else if (typeof this.mediaEstimativasSessao() === 'number') {
             <p id="media-estimativa-sessao">{{ this.mediaEstimativasSessao()}}</p>
             <button type="button" class="botao-primario" id="botao-reiniciar" (click)="reiniciarEstimativaSessao()">Reiniciar</button>
         } 

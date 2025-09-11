@@ -7,6 +7,7 @@ import { ModalUsuarioService } from "../../../../services/sessao/modal-usuario/m
 import { SessaoService } from "../../../../services/sessao/sessao.service";
 import { IUsuario } from "../../../../interfaces/shared/usuario/usuario";
 import { ISessao } from "../../../../interfaces/shared/sessao/sessao";
+import { Router } from "@angular/router";
 
 @Component({
   selector: 'app-modal-usuario',
@@ -17,9 +18,9 @@ import { ISessao } from "../../../../interfaces/shared/sessao/sessao";
 export class ModalUsuario implements OnInit, AfterViewInit {
   @ViewChild('usuarioNome') usuarioNomeRef!: ElementRef; 
   
-  supabaseService = inject(SupabaseService);
-  sessaoService = inject(SessaoService);
-  modalUsuarioService = inject(ModalUsuarioService);
+  private supabaseService = inject(SupabaseService);
+  private sessaoService = inject(SessaoService);
+  private modalUsuarioService = inject(ModalUsuarioService);
 
   titulo: string = 'Novo usuário';
 
@@ -48,9 +49,12 @@ export class ModalUsuario implements OnInit, AfterViewInit {
       const sessaoId = this.sessaoService.sessao()?.id;
       const canalId = this.sessaoService.canalId();
 
-      if(!sessaoId) return alert('Falha ao encontrar id da sessão. Entre novamente na sessão!');
+      if(!sessaoId) 
+        return alert('Falha ao encontrar id da sessão. Crie uma nova sessão');
+      
 
-      if(!canalId) return alert('Falha ao encontrar o id do canal da sessão no Supabase. Entre novamente na sessão!');
+      if(!canalId) 
+        return alert('Falha ao encontrar o id do canal da sessão no Supabase. Entre novamente na sessão!');
 
       const usuarioId = gerarId(8);
 
@@ -71,7 +75,7 @@ export class ModalUsuario implements OnInit, AfterViewInit {
       if (!usuarioCriado) return alert('Não foi possível criar o usuário. Tente novamente!'); 
       
       this.sessaoService.usuario.set(usuarioCriado);
-      sessionStorage.setItem('usuario', JSON.stringify(usuarioCriado));
+      sessionStorage.setItem('usuarioId', usuarioCriado.id);
 
       this.modalUsuarioService.destruirModal();
       this.submitted = false;

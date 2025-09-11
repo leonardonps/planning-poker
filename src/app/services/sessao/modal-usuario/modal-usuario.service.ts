@@ -12,7 +12,7 @@ export class ModalUsuarioService {
     }
 
     abrir() {
-        if(!this.hostRef || this.modalSendoExibido || sessionStorage.getItem('usuario')) return;
+        if(!this.hostRef || this.modalSendoExibido || sessionStorage.getItem('usuarioId')) return;
 
         this.modalUsuarioRef = this.hostRef.createComponent(ModalUsuario);
         this.modalSendoExibido = true;

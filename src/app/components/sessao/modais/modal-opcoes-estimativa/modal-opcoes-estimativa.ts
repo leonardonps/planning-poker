@@ -46,10 +46,11 @@ export class ModalOpcoesEstimativa implements OnInit {
 
       if (!sessaoId) return alert('Falha ao buscar pelo id da sessão');
 
-      const opcoesEstimativas = this.formOpcoesEstimativa.controls['opcoesEstimativa'].value;
-      
+      const opcoesEstimativas: Set<number> = new Set(this.formOpcoesEstimativa.controls['opcoesEstimativa'].value?.split(', ').map(Number));
 
-      this.supabaseService.atualizarOpcoesEstimativaSessao(sessaoId,opcoesEstimativas);  
+      const opcoesEstimativasOrdenadas = Array.from(opcoesEstimativas).sort((a,b) => a - b).join(', ');
+
+      this.supabaseService.atualizarOpcoesEstimativaSessao(sessaoId,opcoesEstimativasOrdenadas);  
 
       this.supabaseService.atualizarEstimativasUsuarios(sessaoId, null);
 

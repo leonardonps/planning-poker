@@ -8,9 +8,12 @@ import { ToastService } from "../shared/toast/toast.service";
 import { truncarNumero } from "../../../utils/funcoes/truncarNumero/truncarNumero";
 import { ModalUsuarioService } from "./modal-usuario/modal-usuario.service";
 import { gerarId } from "../../../utils/funcoes/geracaoId/gerarId";
+import { Router } from "@angular/router";
 
 @Injectable({ providedIn: 'root'})
 export class SessaoService {
+    private router = inject(Router);
+
     private supabaseService = inject(SupabaseService);
 
     private loadingSpinnerService = inject(LoadingSpinnerService);
@@ -26,7 +29,7 @@ export class SessaoService {
     usuario: WritableSignal<IUsuario | null> = signal(null);
     canalId: WritableSignal<string> = signal('');
 
-    criarCanalSessao(sessaoId: string, usuario: string | null): void {
+    criarCanalSessao(sessaoId: string, usuarioId: string | null): void {
         this.canalId.set(gerarId(8));
         
         this.canal = this.supabaseService.supabase.channel(`sessao-${sessaoId}`, {
@@ -91,7 +94,7 @@ export class SessaoService {
 
                 const opcoesEstimativa: string = payload.new['opcoes_estimativa'];
 
-                if (mediaEstimativasSessao == null) {
+                if (mediaEstimativasSessao === null) {
                     if (sessionStorage.getItem('usuarioEstimativa'))           
                         sessionStorage.removeItem('usuarioEstimativa');
                     this.usuario.update(atual => ({...atual, estimativa: null} as IUsuario));
@@ -104,13 +107,22 @@ export class SessaoService {
                 this.sessao.set(sessao);
             })
             .subscribe(async (status) => {
-                if (status === 'SUBSCRIBED') {   
-                    this.inicializarSessao(sessaoId, usuario);
-                    await this.canal?.track({
-                        id: this.canalId()
-                    });
-                    this.loadingSpinnerService.fechar();
-                    this.modalUsuarioService.abrir();
+                if (status === 'SUBSCRIBED') {
+                    try {
+                        await this.inicializarSessao(sessaoId, usuarioId);
+
+                        if(!this.sessao()) throw new Error('Sessão não encontrada!');
+
+                        await this.canal?.track({
+                            id: this.canalId()
+                        });
+
+                        this.loadingSpinnerService.fechar();
+                        this.modalUsuarioService.abrir();
+                    } catch(error) {
+                        this.router.navigate(['/']);
+                        this.loadingSpinnerService.fechar();
+                    }                  
                 }
             });
     }
@@ -120,24 +132,22 @@ export class SessaoService {
         this.canal = null;
     }
 
-    async inicializarSessao(sessaoId: string, usuario: string | null) {
+    async inicializarSessao(sessaoId: string, usuarioId: string | null) {
         try {
             const canalId = this.canalId();
 
             if(!canalId) return alert('Falha ao encontrar o id do canal da sessão no Supabase. Entre novamente na sessão!');
 
-            if (usuario) {
-                const usuarioSessionStorage: IUsuario = JSON.parse(usuario);
+            if (usuarioId) {
+                await this.supabaseService.atualizarPresence(usuarioId, canalId);
 
-                await this.supabaseService.atualizarPresence(usuarioSessionStorage.id, canalId);
-
-                await this.setUsuario(usuarioSessionStorage.id);
+                await this.setUsuario(usuarioId);
             }
 
             await this.setSessao(sessaoId);
             await this.setUsuarios(sessaoId);             
         } catch (error) {
-            alert(`Falha ao inicializar a sessão: ${error}`)
+            alert(`Falha ao inicializar uma sessão: ${error}`);
         }
     }
 

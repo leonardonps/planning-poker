@@ -47,13 +47,13 @@ export class Sessao implements AfterViewInit, OnDestroy {
     this.loadingSpinnerService.exibir();
     
     const sessaoId = this.route.snapshot.paramMap.get('id');
-    const usuario = sessionStorage.getItem('usuario');
+    const usuarioId = sessionStorage.getItem('usuarioId');
 
     if (!sessaoId) return alert(`Não foi possível achar o id da sessão`);
 
     sessionStorage.setItem('sessaoId', sessaoId);
 
-    this.sessaoService.criarCanalSessao(sessaoId, usuario);
+    this.sessaoService.criarCanalSessao(sessaoId, usuarioId);
   }
 
   ngAfterViewInit() {
@@ -76,7 +76,7 @@ export class Sessao implements AfterViewInit, OnDestroy {
     this.sessaoService.copiarSessaoLink(this.sessaoLink);
   }
 
-  selecionarEstimativa(opcao: number) {    
+  selecionarEstimativa(opcao: number) {  
     this.sessaoService.atualizarEstimativaUsuario(opcao);
   }
 

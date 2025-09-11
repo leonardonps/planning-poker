@@ -16,7 +16,6 @@ header {
     width: 100%;
 
     padding: 1%;
-    border: 1px solid lime;
 }
 
 h1 {
@@ -66,13 +65,12 @@ h1 {
 #sessao-principal {
     display: flex;
     flex-flow: column;
-    justify-content: space-evenly;
+    justify-content: center;
     align-items: center;
 
     height: 74%;
     min-height: 300px;
     width: 100%;
-    border: 1px solid purple;
 }
 
 .usuarios {
@@ -81,8 +79,7 @@ h1 {
     justify-content: center;
     
     width: 85%;
-
-    border: 1px solid seagreen;
+    margin-bottom: 1%;
 }
 
 .usuario {
@@ -166,9 +163,7 @@ h1 {
 #sessao-estimativas {
     display: flex;
     
-    width: 85%;
-    border: 1px solid lawngreen;
-    
+    width: 85%;    
     margin-bottom: 3%;
 }
 
@@ -180,7 +175,6 @@ h1 {
 
     height: 100%;
     width: 100%;
-    border: 1px solid red;
 }
 
 #sessao-estimativas > ul > li {

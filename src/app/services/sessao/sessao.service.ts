@@ -51,9 +51,7 @@ export class SessaoService {
                 schema: 'public',
                 table: 'usuario',
                 filter: `sessao_id=eq.${sessaoId}`
-            },
-            (payload) => {
-                console.log(payload);
+            }, (payload) => {
                 const novoUsuario: IUsuario = {
                     id: payload.new['id'],
                     presenceId: payload.new['presence_id'],
@@ -73,16 +71,15 @@ export class SessaoService {
                 schema: 'public',
                 table: 'usuario',
                 filter: `sessao_id=eq.${sessaoId}`
-            },
-                (payload) => {
-                    const usuariosAtualizados: IUsuario[] = this.usuarios().map(usuario => 
-                        usuario.id === payload.new['id'] ? {
-                        ...usuario,
-                        estimativa: payload.new['estimativa'],
-                        presenceId: payload.new['presence_id']
-                        } as IUsuario : usuario as IUsuario
-                    );                
-                    this.usuarios.set(usuariosAtualizados);
+            }, (payload) => {
+                const usuariosAtualizados: IUsuario[] = this.usuarios().map(usuario => 
+                    usuario.id === payload.new['id'] ? {
+                    ...usuario,
+                    estimativa: payload.new['estimativa'],
+                    presenceId: payload.new['presence_id']
+                    } as IUsuario : usuario as IUsuario
+                );                
+                this.usuarios.set(usuariosAtualizados);
             })
             .on('postgres_changes', {
                 event: 'UPDATE',
@@ -161,10 +158,6 @@ export class SessaoService {
         this.supabaseService.atualizarEstimativaUsuario(usuario.id, opcaoSelecionada);
     
         this.setEstimativaUsuario(opcaoSelecionada);
-
-        usuario = {...usuario, estimativa: opcaoSelecionada};
-
-        sessionStorage.setItem('usuario', JSON.stringify(usuario));
     }
 
     atualizarMediaEstimativaSessao(estimativas: number[]) {

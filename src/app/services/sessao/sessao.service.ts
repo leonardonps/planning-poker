@@ -27,11 +27,9 @@ export class SessaoService {
     usuariosPresentes: Signal<IUsuario[]> = computed(() => this.usuarios().filter(usuario => this.presencesId().includes(usuario.presenceId)));
     presencesId: WritableSignal<string[]> = signal([]);
     usuario: WritableSignal<IUsuario | null> = signal(null);
-    canalId: WritableSignal<string> = signal('');
+    canalId: WritableSignal<string> = signal(gerarId(8));
 
-    criarCanalSessao(sessaoId: string, usuarioId: string | null): void {
-        this.canalId.set(gerarId(8));
-        
+    criarCanalSessao(sessaoId: string, usuarioId: string | null): void {        
         this.canal = this.supabaseService.supabase.channel(`sessao-${sessaoId}`, {
             config: {
                 presence: {
@@ -105,21 +103,12 @@ export class SessaoService {
             })
             .subscribe(async (status) => {
                 if (status === 'SUBSCRIBED') {
-                    try {
-                        await this.inicializarSessao(sessaoId, usuarioId);
+                    await this.canal?.track({
+                        id: this.canalId()
+                    });
 
-                        if(!this.sessao()) throw new Error('Sessão não encontrada!');
-
-                        await this.canal?.track({
-                            id: this.canalId()
-                        });
-
-                        this.loadingSpinnerService.fechar();
-                        this.modalUsuarioService.abrir();
-                    } catch(error) {
-                        this.router.navigate(['/']);
-                        this.loadingSpinnerService.fechar();
-                    }                  
+                    this.loadingSpinnerService.fechar();
+                    this.modalUsuarioService.abrir();           
                 }
             });
     }
@@ -131,31 +120,33 @@ export class SessaoService {
 
     async inicializarSessao(sessaoId: string, usuarioId: string | null) {
         try {
-            const canalId = this.canalId();
-
-            if(!canalId) return alert('Falha ao encontrar o id do canal da sessão no Supabase. Entre novamente na sessão!');
-
+            await this.setSessao(sessaoId);
+            
+            if (!this.sessao()) {
+                this.router.navigate(['/']);
+                this.loadingSpinnerService.fechar();
+            }
+            
             if (usuarioId) {
-                await this.supabaseService.atualizarPresence(usuarioId, canalId);
+                await this.supabaseService.atualizarPresence(usuarioId, this.canalId());
 
                 await this.setUsuario(usuarioId);
             }
 
-            await this.setSessao(sessaoId);
             await this.setUsuarios(sessaoId);             
         } catch (error) {
             alert(`Falha ao inicializar uma sessão: ${error}`);
         }
     }
 
-    atualizarEstimativaUsuario(opcao: number) {
+    async atualizarEstimativaUsuario(opcao: number) {
         let usuario = this.usuario();
     
         if (!usuario) return alert('Falha ao encontrar o usuário. Por favor, acesse novamente a sessão.');
 
         const opcaoSelecionada = opcao === usuario.estimativa ? null : opcao;
 
-        this.supabaseService.atualizarEstimativaUsuario(usuario.id, opcaoSelecionada);
+        await this.supabaseService.atualizarEstimativaUsuario(usuario.id, opcaoSelecionada);
     
         this.setEstimativaUsuario(opcaoSelecionada);
     }
@@ -170,13 +161,13 @@ export class SessaoService {
         this.supabaseService.atualizarEstimativaSessao(sessao.id, truncarNumero(mediaEstimativasSessao, 1));
     }
 
-    reiniciarEstimativaSessao() {
+    async reiniciarEstimativaSessao() {
         const sessao = this.sessao();
 
         if (!sessao) return alert('Falha ao encontrar a sessão. Por favor, acesse novamente a sessão.'); 
 
-        this.supabaseService.atualizarEstimativaSessao(sessao.id, null);
-        this.supabaseService.atualizarEstimativasUsuarios(sessao.id, null);
+        await this.supabaseService.atualizarEstimativaSessao(sessao.id, null);
+        await this.supabaseService.atualizarEstimativasUsuarios(sessao.id, null);
     }
 
     copiarSessaoLink(sessaoLink: string): void {

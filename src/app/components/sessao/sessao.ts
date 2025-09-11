@@ -53,6 +53,7 @@ export class Sessao implements AfterViewInit, OnDestroy {
 
     sessionStorage.setItem('sessaoId', sessaoId);
 
+    this.sessaoService.inicializarSessao(sessaoId, usuarioId);
     this.sessaoService.criarCanalSessao(sessaoId, usuarioId);
   }
 

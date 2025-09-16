@@ -12,7 +12,7 @@
     <div class="usuarios">
         @for(usuario of this.usuariosPresentes(); track $index; let i = $index) {
              <div class="usuario">
-                 <div class="usuario-estimativa"[class.usuario-estimativa-selecionada]="usuario.estimativa!== null">{{ (this.mediaEstimativasSessao() || this.mediaEstimativasSessao() === 0) ? usuario.estimativa : '?'}}</div>
+                 <div class="usuario-estimativa"[class.usuario-estimativa-selecionada]="usuario.estimativa!== null">{{ ((this.mediaEstimativasSessao() || this.mediaEstimativasSessao() === 0) && usuario.estimativa) ? usuario.estimativa : '?'}}</div>
                  <div class="usuario-nome"><strong>{{ usuario.nome }}</strong></div>
              </div>
         }

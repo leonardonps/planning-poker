@@ -27,28 +27,18 @@ export class SessaoService {
     usuariosPresentes: Signal<IUsuario[]> = computed(() => this.usuarios().filter(usuario => this.presencesId().includes(usuario.presenceId)));
     presencesId: WritableSignal<string[]> = signal([]);
     usuario: WritableSignal<IUsuario | null> = signal(null);
-    canalId: WritableSignal<string> = signal(gerarId(8));
+    canalId: WritableSignal<string> = signal('');
 
-    async criarCanalSessao(sessaoId: string, usuarioId: string | null): Promise<void> {        
-        this.canal = this.supabaseService.supabase.channel(`sessao-${sessaoId}`, {
-            config: {
-                presence: {
-                    key: this.canalId()
-                }
-            }
-        });
+    async criarCanalSessao(sessaoId: string, usuarioId: string | null): Promise<void> {
+        this.canalId.set(gerarId(8));
+        
+        this.canal = this.supabaseService.supabase.channel(`sessao-${sessaoId}`);
 
         this.canal
             .on('presence', {
                 event: 'sync'
             }, () => {
                 this.atualizarUsuariosPresentes();
-            })
-            .on('presence', {
-                event: 'join'
-            }, () => {     
-                this.loadingSpinnerService.fechar();
-                this.modalUsuarioService.abrir();           
             })
             .on('postgres_changes', {
                 event: 'INSERT',
@@ -78,9 +68,9 @@ export class SessaoService {
             }, (payload) => {
                 const usuariosAtualizados: IUsuario[] = this.usuarios().map(usuario => 
                     usuario.id === payload.new['id'] ? {
-                    ...usuario,
-                    estimativa: payload.new['estimativa'],
-                    presenceId: payload.new['presence_id']
+                        ...usuario,
+                        estimativa: payload.new['estimativa'],
+                        presenceId: payload.new['presence_id']
                     } as IUsuario : usuario as IUsuario
                 );                
                 this.usuarios.set(usuariosAtualizados);
@@ -92,12 +82,10 @@ export class SessaoService {
                 filter: `id=eq.${sessaoId}`
             }, (payload) => {
                 const mediaEstimativasSessao: number | null = payload.new['media_estimativas_sessao'];
-
+                
                 const opcoesEstimativa: string = payload.new['opcoes_estimativa'];
 
                 if (mediaEstimativasSessao === null) {
-                    if (sessionStorage.getItem('usuarioEstimativa'))           
-                        sessionStorage.removeItem('usuarioEstimativa');
                     this.usuario.update(atual => ({...atual, estimativa: null} as IUsuario));
                 }
 
@@ -107,11 +95,20 @@ export class SessaoService {
 
                 this.sessao.set(sessao);
             })
-            .subscribe();
+            .subscribe(async (status) => {
+                if (status === 'SUBSCRIBED') {
+                    await this.canal?.track({
+                        id: this.canalId()
+                    });
+                }
+            });
 
         await this.canal?.track({
             id: this.canalId()
         });
+
+        this.loadingSpinnerService.fechar();
+        this.modalUsuarioService.abrir();           
     }
     
     destruirCanal(): void {
@@ -147,9 +144,9 @@ export class SessaoService {
 
         const opcaoSelecionada = opcao === usuario.estimativa ? null : opcao;
 
-        await this.supabaseService.atualizarEstimativaUsuario(usuario.id, opcaoSelecionada);
-    
         this.setEstimativaUsuario(opcaoSelecionada);
+
+        await this.supabaseService.atualizarEstimativaUsuario(usuario.id, opcaoSelecionada);
     }
 
     atualizarMediaEstimativaSessao(estimativas: number[]) {
@@ -214,7 +211,7 @@ export class SessaoService {
     setEstimativaUsuario(estimativa: number | null): void {
         let usuario = this.usuario();
         
-        if (usuario) usuario = {...usuario, estimativa}
+        if (usuario) usuario = {...usuario, estimativa};
 
         this.usuario.set(usuario);
     }
@@ -223,7 +220,7 @@ export class SessaoService {
         if(!this.canal) return alert('Canal não foi encontrado!');
 
         const presencasId = Object.values(this.canal.presenceState()).flat().map(presenca => (presenca as any).id);
-
+    
         this.presencesId.set(presencasId);
     }
 }

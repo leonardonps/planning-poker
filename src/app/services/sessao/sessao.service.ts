@@ -107,10 +107,10 @@ export class SessaoService {
 
             sessionStorage.setItem('sessaoId', sessaoId);
             
+            await this.criarCanalSessao(sessaoId);
+            
             await this.setUsuarios(sessaoId);  
                     
-            await this.criarCanalSessao(sessaoId);
-
             this.loadingSpinnerService.fechar();
             this.modalUsuarioService.abrir();    
         } catch (error) {

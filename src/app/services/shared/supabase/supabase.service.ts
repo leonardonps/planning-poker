@@ -133,7 +133,6 @@ export class SupabaseService {
 
     if (error) 
       alert(`Falha ao atualizar opções de estimativa da sessão: ${error}`);
-    
   }
 
   async removerUsuarioSessao(usuarioId: string) {
@@ -141,7 +140,5 @@ export class SupabaseService {
 
     if (error) 
       alert(`Falha ao atualizar opções de estimativa da sessão: ${error}`);
-
   }
-
 }

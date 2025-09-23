@@ -28,10 +28,97 @@ export class SessaoService {
     presencesId: WritableSignal<string[]> = signal([]);
     usuario: WritableSignal<IUsuario | null> = signal(null);
     canalId: WritableSignal<string> = signal('');
+    
+    destruirCanal(): void {
+        this.canal?.unsubscribe();
+        this.canal = null;
+    }
 
-    async criarCanalSessao(sessaoId: string, usuarioId: string | null): Promise<void> {
-        this.canalId.set(gerarId(8));
+    atualizarMediaEstimativaSessao(estimativas: number[]) {
+        const sessao = this.sessao();
+
+        if (!sessao) return alert('Falha ao encontrar a sessão. Por favor, acesse novamente a sessão.');
+
+        const mediaEstimativasSessao = this.calcularMediaEstimativasSessao(estimativas);
+
+        this.supabaseService.atualizarEstimativaSessao(sessao.id, truncarNumero(mediaEstimativasSessao, 1));
+    }
+
+    copiarSessaoLink(sessaoLink: string): void {
+        try {
+            navigator
+                .clipboard
+                .writeText(sessaoLink)
+                .then(() => this.toastService.exibir({
+                    mensagem: 'Link copiado para a área de transferência'
+                }) )
+        } catch (error) {
+            this.toastService.exibir({
+                    mensagem: `Falha ao copiar link para a área de transferência: ${error}`
+            });
+        }
+    }
+
+    calcularMediaEstimativasSessao(estimativasSessao: number[]): number { 
+        const valorInicial: number = 0;
         
+        const mediaEstimativasSessao: number = estimativasSessao.reduce((somaEstimativas, estimativa) => somaEstimativas + estimativa, valorInicial)/estimativasSessao.length;
+        
+        return mediaEstimativasSessao;
+    }
+
+    setEstimativaUsuario(estimativa: number | null): void {
+        let usuario = this.usuario();
+        
+        if (usuario) usuario = {...usuario, estimativa};
+
+        this.usuario.set(usuario);
+    }
+
+    atualizarUsuariosPresentes() {
+        if(!this.canal) return alert('Canal não foi encontrado!');
+
+        const presencasId = Object.values(this.canal.presenceState()).flat().map(presenca => (presenca as any).id);
+
+        this.presencesId.set(presencasId);
+    }
+
+    async inicializarSessao(sessaoId: string, usuarioId: string | null) {
+        try {
+            this.canalId.set(gerarId(8));
+
+            await this.setSessao(sessaoId);
+            
+            if (!this.sessao()) {
+                this.router.navigate(['/']);
+                this.loadingSpinnerService.fechar();
+            }
+            
+            if (this.sessao() && this.sessao()?.id !== sessionStorage.getItem('sessaoId')) {
+                usuarioId = null;
+                sessionStorage.removeItem('usuarioId');
+            }
+            
+            if (usuarioId) {
+                await this.supabaseService.atualizarPresence(usuarioId, this.canalId());
+
+                await this.setUsuario(usuarioId);
+            }
+
+            sessionStorage.setItem('sessaoId', sessaoId);
+            
+            await this.setUsuarios(sessaoId);  
+                    
+            await this.criarCanalSessao(sessaoId);
+
+            this.loadingSpinnerService.fechar();
+            this.modalUsuarioService.abrir();    
+        } catch (error) {
+            alert(`Falha ao inicializar uma sessão: ${error}`);
+        }
+    }
+
+    async criarCanalSessao(sessaoId: string): Promise<void> {        
         this.canal = this.supabaseService.supabase.channel(`sessao-${sessaoId}`);
 
         this.canal
@@ -102,39 +189,6 @@ export class SessaoService {
                     });
                 }
             });
-
-        await this.canal?.track({
-            id: this.canalId()
-        });
-
-        this.loadingSpinnerService.fechar();
-        this.modalUsuarioService.abrir();           
-    }
-    
-    destruirCanal(): void {
-        this.canal?.unsubscribe();
-        this.canal = null;
-    }
-
-    async inicializarSessao(sessaoId: string, usuarioId: string | null) {
-        try {
-            await this.setSessao(sessaoId);
-            
-            if (!this.sessao()) {
-                this.router.navigate(['/']);
-                this.loadingSpinnerService.fechar();
-            }
-            
-            if (usuarioId) {
-                await this.supabaseService.atualizarPresence(usuarioId, this.canalId());
-
-                await this.setUsuario(usuarioId);
-            }
-
-            await this.setUsuarios(sessaoId);             
-        } catch (error) {
-            alert(`Falha ao inicializar uma sessão: ${error}`);
-        }
     }
 
     async atualizarEstimativaUsuario(opcao: number) {
@@ -149,16 +203,6 @@ export class SessaoService {
         await this.supabaseService.atualizarEstimativaUsuario(usuario.id, opcaoSelecionada);
     }
 
-    atualizarMediaEstimativaSessao(estimativas: number[]) {
-        const sessao = this.sessao();
-
-        if (!sessao) return alert('Falha ao encontrar a sessão. Por favor, acesse novamente a sessão.');
-
-        const mediaEstimativasSessao = this.calcularMediaEstimativasSessao(estimativas);
-
-        this.supabaseService.atualizarEstimativaSessao(sessao.id, truncarNumero(mediaEstimativasSessao, 1));
-    }
-
     async reiniciarEstimativaSessao() {
         const sessao = this.sessao();
 
@@ -166,29 +210,6 @@ export class SessaoService {
 
         await this.supabaseService.atualizarEstimativaSessao(sessao.id, null);
         await this.supabaseService.atualizarEstimativasUsuarios(sessao.id, null);
-    }
-
-    copiarSessaoLink(sessaoLink: string): void {
-        try {
-            navigator
-                .clipboard
-                .writeText(sessaoLink)
-                .then(() => this.toastService.exibir({
-                    mensagem: 'Link copiado para a área de transferência'
-                }) )
-        } catch (error) {
-            this.toastService.exibir({
-                    mensagem: `Falha ao copiar link para a área de transferência: ${error}`
-            });
-        }
-    }
-    
-    calcularMediaEstimativasSessao(estimativasSessao: number[]): number { 
-        const valorInicial: number = 0;
-        
-        const mediaEstimativasSessao: number = estimativasSessao.reduce((somaEstimativas, estimativa) => somaEstimativas + estimativa, valorInicial)/estimativasSessao.length;
-        
-        return mediaEstimativasSessao;
     }
 
     async setSessao(id: string): Promise<void> {
@@ -206,21 +227,5 @@ export class SessaoService {
         const usuario: IUsuario | null = await this.supabaseService.buscarUsuario(id);
         
         this.usuario.set(usuario);
-    }
-    
-    setEstimativaUsuario(estimativa: number | null): void {
-        let usuario = this.usuario();
-        
-        if (usuario) usuario = {...usuario, estimativa};
-
-        this.usuario.set(usuario);
-    }
-
-    atualizarUsuariosPresentes() {
-        if(!this.canal) return alert('Canal não foi encontrado!');
-
-        const presencasId = Object.values(this.canal.presenceState()).flat().map(presenca => (presenca as any).id);
-    
-        this.presencesId.set(presencasId);
     }
 }

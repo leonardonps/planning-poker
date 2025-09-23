@@ -1,7 +1,6 @@
 import { Routes } from '@angular/router';
 import { Login } from './components/login/login';
 import { Sessao } from './components/sessao/sessao';
-import { sessaoGuard } from './guards/sessao.guard';
 
 export const routes: Routes = [
     {
@@ -10,8 +9,7 @@ export const routes: Routes = [
     },
     {
         path: 'sessao/:id',
-        component: Sessao,
-        canActivate:[sessaoGuard]
+        component: Sessao
     },
     {
         path: '**',

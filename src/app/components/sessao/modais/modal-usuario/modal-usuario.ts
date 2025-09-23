@@ -79,7 +79,6 @@ export class ModalUsuario implements OnInit, AfterViewInit {
 
       this.modalUsuarioService.destruirModal();
       this.submitted = false;
-      
     }
   }
 }

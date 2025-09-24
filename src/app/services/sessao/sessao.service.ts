@@ -86,7 +86,7 @@ export class SessaoService {
     async inicializarSessao(sessaoId: string, usuarioId: string | null) {
         try {
             this.canalId.set(gerarId(8));
-
+            
             await this.setSessao(sessaoId);
             
             if (!this.sessao()) {
@@ -108,7 +108,7 @@ export class SessaoService {
             sessionStorage.setItem('sessaoId', sessaoId);
             
             await this.criarCanalSessao(sessaoId);
-            
+
             await this.setUsuarios(sessaoId);  
                     
             this.loadingSpinnerService.fechar();
@@ -118,77 +118,84 @@ export class SessaoService {
         }
     }
 
-    async criarCanalSessao(sessaoId: string): Promise<void> {        
-        this.canal = this.supabaseService.supabase.channel(`sessao-${sessaoId}`);
+    async criarCanalSessao(sessaoId: string): Promise<void> {     
+        return new Promise((resolve, reject) => {
+            this.canal = this.supabaseService.supabase.channel(`sessao-${sessaoId}`);
 
-        this.canal
-            .on('presence', {
-                event: 'sync'
-            }, () => {
-                this.atualizarUsuariosPresentes();
-            })
-            .on('postgres_changes', {
-                event: 'INSERT',
-                schema: 'public',
-                table: 'usuario',
-                filter: `sessao_id=eq.${sessaoId}`
-            }, (payload) => {
-                const novoUsuario: IUsuario = {
-                    id: payload.new['id'],
-                    presenceId: payload.new['presence_id'],
-                    nome: payload.new['nome'],
-                    estimativa: payload.new['estimativa'],
-                    observador: payload.new['observador'],
-                    sessaoId: payload.new['sessao_id'],
-                    dataCriacao: payload.new['data_criacao']
-                }; 
-
-                const usuarios = this.usuarios();
-            
-                this.usuarios.set([...usuarios, novoUsuario]);
-            })
-            .on('postgres_changes', {
-                event: 'UPDATE',
-                schema: 'public',
-                table: 'usuario',
-                filter: `sessao_id=eq.${sessaoId}`
-            }, (payload) => {
-                const usuariosAtualizados: IUsuario[] = this.usuarios().map(usuario => 
-                    usuario.id === payload.new['id'] ? {
-                        ...usuario,
+            this.canal
+                .on('presence', {
+                    event: 'sync'
+                }, () => {
+                    this.atualizarUsuariosPresentes();
+                })
+                .on('postgres_changes', {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'usuario',
+                    filter: `sessao_id=eq.${sessaoId}`
+                }, (payload) => {
+                    const novoUsuario: IUsuario = {
+                        id: payload.new['id'],
+                        presenceId: payload.new['presence_id'],
+                        nome: payload.new['nome'],
                         estimativa: payload.new['estimativa'],
-                        presenceId: payload.new['presence_id']
-                    } as IUsuario : usuario as IUsuario
-                );                
-                this.usuarios.set(usuariosAtualizados);
-            })
-            .on('postgres_changes', {
-                event: 'UPDATE',
-                schema: 'public',
-                table: 'sessao',
-                filter: `id=eq.${sessaoId}`
-            }, (payload) => {
-                const mediaEstimativasSessao: number | null = payload.new['media_estimativas_sessao'];
+                        observador: payload.new['observador'],
+                        sessaoId: payload.new['sessao_id'],
+                        dataCriacao: payload.new['data_criacao']
+                    }; 
+
+                    const usuarios = this.usuarios();
                 
-                const opcoesEstimativa: string = payload.new['opcoes_estimativa'];
+                    this.usuarios.set([...usuarios, novoUsuario]);
+                })
+                .on('postgres_changes', {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'usuario',
+                    filter: `sessao_id=eq.${sessaoId}`
+                }, (payload) => {
+                    const usuariosAtualizados: IUsuario[] = this.usuarios().map(usuario => 
+                        usuario.id === payload.new['id'] ? {
+                            ...usuario,
+                            estimativa: payload.new['estimativa'],
+                            presenceId: payload.new['presence_id']
+                        } as IUsuario : usuario as IUsuario
+                    );                
+                    this.usuarios.set(usuariosAtualizados);
+                })
+                .on('postgres_changes', {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'sessao',
+                    filter: `id=eq.${sessaoId}`
+                }, (payload) => {
+                    const mediaEstimativasSessao: number | null = payload.new['media_estimativas_sessao'];
+                    
+                    const opcoesEstimativa: string = payload.new['opcoes_estimativa'];
 
-                if (mediaEstimativasSessao === null) {
-                    this.usuario.update(atual => ({...atual, estimativa: null} as IUsuario));
-                }
+                    if (mediaEstimativasSessao === null) {
+                        this.usuario.update(atual => ({...atual, estimativa: null} as IUsuario));
+                    }
 
-                let sessao = this.sessao();
+                    let sessao = this.sessao();
 
-                if (sessao) sessao = {...sessao, opcoesEstimativa: opcoesEstimativa, mediaEstimativasSessao: mediaEstimativasSessao};
+                    if (sessao) sessao = {...sessao, opcoesEstimativa: opcoesEstimativa, mediaEstimativasSessao: mediaEstimativasSessao};
 
-                this.sessao.set(sessao);
-            })
-            .subscribe(async (status) => {
-                if (status === 'SUBSCRIBED') {
-                    await this.canal?.track({
-                        id: this.canalId()
-                    });
-                }
-            });
+                    this.sessao.set(sessao);
+                })
+                .subscribe(async (status) => {
+                    if (status === 'SUBSCRIBED') {
+                        await this.canal?.track({
+                            id: this.canalId()
+                        });
+                        resolve();
+                    }
+
+                    if (status === 'CHANNEL_ERROR') {
+                        reject();
+                    }
+                });
+        });  
     }
 
     async atualizarEstimativaUsuario(opcao: number) {

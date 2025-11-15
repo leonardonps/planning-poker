@@ -1,30 +1,44 @@
-import { AfterViewInit, Component, computed, HostBinding, HostListener, inject, OnDestroy, Signal, ViewChild, ViewContainerRef } from "@angular/core";
+import {
+  AfterViewInit,
+  Component,
+  computed,
+  HostBinding,
+  inject,
+  OnDestroy,
+  OnInit,
+  Signal,
+  ViewChild,
+  ViewContainerRef,
+} from '@angular/core';
 
-import { ActivatedRoute } from "@angular/router";
+import { ActivatedRoute } from '@angular/router';
 
-import { SessaoService } from "../../services/sessao/sessao.service";
-import { ModalUsuarioService } from "../../services/sessao/modal-usuario/modal-usuario.service";
-import { LoadingSpinnerService } from "../../services/shared/loading-spinner/loading-spinner.service";
-import { ModalOpcoesEstimativaService } from "../../services/sessao/modal-opcoes-estimativa/modal-opcoes-estimativa.service";
-import { ToastService } from "../../services/shared/toast/toast.service";
+import { SessaoService } from '../../services/sessao/sessao.service';
+import { ModalUsuarioService } from '../../services/sessao/modal-usuario/modal-usuario.service';
+import { LoadingSpinnerService } from '../../services/shared/loading-spinner/loading-spinner.service';
+import { ModalOpcoesEstimativaService } from '../../services/sessao/modal-opcoes-estimativa/modal-opcoes-estimativa.service';
+import { ToastService } from '../../services/shared/toast/toast.service';
 
-import { IUsuario } from "../../interfaces/shared/usuario/usuario";
+import { IUsuario } from '../../interfaces/shared/usuario/usuario';
 
 @Component({
   selector: 'app-sessao',
   imports: [],
   templateUrl: './sessao.html',
-  styleUrl: './sessao.scss'
+  styleUrl: './sessao.scss',
 })
-export class Sessao implements AfterViewInit, OnDestroy {
-  @ViewChild('toast', { read: ViewContainerRef }) toastContainerRef!: ViewContainerRef; 
-  @ViewChild('modal', { read: ViewContainerRef }) modalContainerRef!: ViewContainerRef; 
-  @HostBinding('class') classname = 'flex-column justify-content-space-between align-items-center';
-  
+export class Sessao implements AfterViewInit, OnInit, OnDestroy {
+  @ViewChild('toast', { read: ViewContainerRef })
+  toastContainerRef!: ViewContainerRef;
+  @ViewChild('modal', { read: ViewContainerRef })
+  modalContainerRef!: ViewContainerRef;
+  @HostBinding('class') classname =
+    'flex-column justify-content-space-between align-items-center';
+
   private route = inject(ActivatedRoute);
 
   private sessaoService = inject(SessaoService);
-  
+
   private modalUsuarioService = inject(ModalUsuarioService);
   private modalOpcoesEstimativaService = inject(ModalOpcoesEstimativaService);
   private toastService = inject(ToastService);
@@ -33,19 +47,32 @@ export class Sessao implements AfterViewInit, OnDestroy {
   private sessaoLink = window.location.href;
 
   usuariosPresentes: Signal<IUsuario[]> = computed(() =>
-    this.sessaoService.usuariosPresentes().sort((a, b) => a.nome.localeCompare(b.nome)));
+    this.sessaoService
+      .usuariosPresentes()
+      .sort((a, b) => a.nome.localeCompare(b.nome)),
+  );
 
-  estimativasUsuarios: Signal<number[]> = computed(() => this.usuariosPresentes().filter(usuario => usuario.estimativa !== null).map(usuario => usuario.estimativa as number));
-  
-  opcoesEstimativa: Signal<number[] | undefined> = computed(() => this.sessaoService.sessao()?.opcoesEstimativa.split(', ').map(Number)); 
+  estimativasUsuarios: Signal<number[]> = computed(() =>
+    this.usuariosPresentes()
+      .filter((usuario) => usuario.estimativa !== null)
+      .map((usuario) => usuario.estimativa as number),
+  );
 
-  mediaEstimativasSessao: Signal<number | null | undefined> = computed(() => this.sessaoService.sessao()?.mediaEstimativasSessao);
-  
-  opcaoSelecionada: Signal<number | null | undefined> = computed(() => this.sessaoService.usuario()?.estimativa) 
+  opcoesEstimativa: Signal<number[] | undefined> = computed(() =>
+    this.sessaoService.sessao()?.opcoesEstimativa.split(', ').map(Number),
+  );
+
+  mediaEstimativasSessao: Signal<number | null | undefined> = computed(
+    () => this.sessaoService.sessao()?.mediaEstimativasSessao,
+  );
+
+  opcaoSelecionada: Signal<number | null | undefined> = computed(
+    () => this.sessaoService.usuario()?.estimativa,
+  );
 
   ngOnInit() {
     this.loadingSpinnerService.exibir();
-    
+
     const sessaoId = this.route.snapshot.paramMap.get('id');
     const usuarioId = sessionStorage.getItem('usuarioId');
 
@@ -62,11 +89,11 @@ export class Sessao implements AfterViewInit, OnDestroy {
 
   ngOnDestroy() {
     sessionStorage.clear();
-    
+
     this.toastService.destruirToast();
     this.modalUsuarioService.destruirModal();
     this.modalOpcoesEstimativaService.destruirModal();
-    
+
     this.sessaoService.destruirCanal();
   }
 
@@ -74,7 +101,7 @@ export class Sessao implements AfterViewInit, OnDestroy {
     this.sessaoService.copiarSessaoLink(this.sessaoLink);
   }
 
-  selecionarEstimativa(opcao: number) {  
+  selecionarEstimativa(opcao: number) {
     this.sessaoService.atualizarEstimativaUsuario(opcao);
   }
 
@@ -89,6 +116,6 @@ export class Sessao implements AfterViewInit, OnDestroy {
   }
 
   abrirModalEditarOpcoesEstimativa() {
-    this.modalOpcoesEstimativaService.abrir();    
+    this.modalOpcoesEstimativaService.abrir();
   }
 }

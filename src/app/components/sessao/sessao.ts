@@ -37,7 +37,7 @@ export class Sessao implements AfterViewInit, OnInit, OnDestroy {
 
   private route = inject(ActivatedRoute);
 
-  private sessaoService = inject(SessaoService);
+  sessaoService = inject(SessaoService);
 
   private modalUsuarioService = inject(ModalUsuarioService);
   private modalOpcoesEstimativaService = inject(ModalOpcoesEstimativaService);
@@ -117,5 +117,9 @@ export class Sessao implements AfterViewInit, OnInit, OnDestroy {
 
   abrirModalEditarOpcoesEstimativa() {
     this.modalOpcoesEstimativaService.abrir();
+  }
+
+  mudarModoParaParticipante() {
+    this.sessaoService.mudarModoParaParticipante();
   }
 }

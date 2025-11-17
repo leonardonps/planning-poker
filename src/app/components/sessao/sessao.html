@@ -15,22 +15,28 @@
     </ul>
   </nav>
 </header>
-<section id="sessao-principal">
+<section id="secao-principal">
   <div class="usuarios">
     @for (usuario of this.usuariosPresentes(); track $index; let i = $index) {
       <div class="usuario">
-        <div
-          class="usuario-estimativa"
-          [class.usuario-estimativa-selecionada]="usuario.estimativa !== null"
-        >
-          {{
-            (this.mediaEstimativasSessao() ||
-              this.mediaEstimativasSessao() === 0) &&
-            usuario.estimativa
-              ? usuario.estimativa
-              : "?"
-          }}
-        </div>
+        @if(!usuario.observador) {
+            <div
+              class="usuario-estimativa"
+              [class.usuario-estimativa-selecionada]="usuario.estimativa !== null"
+            >
+              {{
+                (this.mediaEstimativasSessao() ||
+                  this.mediaEstimativasSessao() === 0) &&
+                usuario.estimativa
+                  ? usuario.estimativa
+                  : "?"            
+              }}
+            </div>
+        } @else {
+            <div class="usuario-estimativa">
+                <span class="material-symbols-outlined observador-icone">eyeglasses_2</span>
+            </div>
+        }
         <div class="usuario-nome">
           <strong>{{ usuario.nome }}</strong>
         </div>
@@ -68,38 +74,51 @@
     }
   </div>
 </section>
-<section id="sessao-estimativas">
-  <ul>
-    @if (!this.mediaEstimativasSessao() && this.opcoesEstimativa()) {
-      <li>
-        <button
-          type="button"
-          class="botao-primario material-icons"
-          id="editar-opcoes-estimativas"
-          (click)="abrirModalEditarOpcoesEstimativa()"
-        >
-          edit
-        </button>
-      </li>
-    }
-    @for (opcao of this.opcoesEstimativa(); track $index) {
-      <li>
-        <button
-          type="button"
-          class="opcao-estimativa"
-          [class.opcao-estimativa-selecionada]="
-            opcao === this.opcaoSelecionada()
-          "
-          [class.opcao-estimativa-hover]="!this.mediaEstimativasSessao()"
-          [disabled]="this.mediaEstimativasSessao()"
-          (click)="selecionarEstimativa(opcao)"
-        >
-          {{ opcao }}
-        </button>
-      </li>
-    }
-  </ul>
-</section>
+
+@if (!this.sessaoService.usuario()?.observador) {
+  <section id="secao-estimativas">
+    <ul>
+      @if (!this.mediaEstimativasSessao() && this.opcoesEstimativa()) {
+        <li>
+          <button
+            type="button"
+            class="botao-primario material-icons"
+            id="editar-opcoes-estimativas"
+            (click)="abrirModalEditarOpcoesEstimativa()"
+          >
+            edit
+          </button>
+        </li>
+      }
+      @for (opcao of this.opcoesEstimativa(); track $index) {
+        <li>
+          <button
+            type="button"
+            class="opcao-estimativa"
+            [class.opcao-estimativa-selecionada]="
+              opcao === this.opcaoSelecionada()
+            "
+            [class.opcao-estimativa-hover]="!this.mediaEstimativasSessao()"
+            [disabled]="this.mediaEstimativasSessao()"
+            (click)="selecionarEstimativa(opcao)"
+          >
+            {{ opcao }}
+          </button>
+        </li>
+      }
+    </ul>
+  </section>
+}
+@if (this.sessaoService.usuario()?.observador) {
+  <section id="secao-modo-observador">
+    <p id="texto-sobre-modo-observador">
+      Você está no modo de observador. Caso queira estimar também, <button type="button" (click)="mudarModoParaParticipante()"
+      id="botao-mudar-para-modo-participante"
+     >clique aqui</button>.
+    </p>
+  </section>
+}
+
 <ng-container #toast></ng-container>
 <ng-container #modal></ng-container>
 <ng-container #loading><ng-container></ng-container></ng-container>

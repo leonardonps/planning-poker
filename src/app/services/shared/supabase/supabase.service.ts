@@ -13,12 +13,13 @@ export class SupabaseService {
   constructor() {
     this._supabase = createClient(
       environment.supabaseUrl,
-      environment.supabaseKey, {
+      environment.supabaseKey,
+      {
         realtime: {
           worker: true,
-          heartbeatIntervalMs: 15000
-        }
-      }
+          heartbeatIntervalMs: 15000,
+        },
+      },
     );
   }
 
@@ -142,14 +143,17 @@ export class SupabaseService {
     }
   }
 
-  async atualizarPresence(usuarioId: string, presence: string): Promise<void> {
+  async atualizarModoUsuario(
+    usuarioId: string,
+    observador: boolean,
+  ): Promise<void> {
     const { error } = await this.supabase
       .from('usuario')
-      .update({ presence_id: presence })
+      .update({ observador: observador })
       .eq('id', usuarioId);
 
     if (error) {
-      alert(`Falha ao atualizar estimativa do usuário: ${error.message}`);
+      alert(`Falha ao atualizar modo do usuário: ${error.message}`);
     }
   }
 
@@ -189,16 +193,6 @@ export class SupabaseService {
       .from('sessao')
       .update({ opcoes_estimativa: opcoesEstimativa })
       .eq('id', sessaoId);
-
-    if (error)
-      alert(`Falha ao atualizar opções de estimativa da sessão: ${error}`);
-  }
-
-  async removerUsuarioSessao(usuarioId: string) {
-    const { error } = await this.supabase
-      .from('usuario')
-      .delete()
-      .eq('id', usuarioId);
 
     if (error)
       alert(`Falha ao atualizar opções de estimativa da sessão: ${error}`);

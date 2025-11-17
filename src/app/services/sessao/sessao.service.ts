@@ -86,14 +86,6 @@ export class SessaoService {
     return mediaEstimativasSessao;
   }
 
-  setEstimativaUsuario(estimativa: number | null): void {
-    let usuario = this.usuario();
-
-    if (usuario) usuario = { ...usuario, estimativa };
-
-    this.usuario.set(usuario);
-  }
-
   atualizarUsuariosPresentes() {
     if (!this.canal) return alert('Canal não foi encontrado!');
 
@@ -200,7 +192,7 @@ export class SessaoService {
                   ? ({
                       ...usuario,
                       estimativa: payload.new['estimativa'],
-                      presenceId: payload.new['presence_id'],
+                      observador: payload.new['observador'],
                     } as IUsuario)
                   : (usuario as IUsuario),
             );
@@ -265,21 +257,38 @@ export class SessaoService {
   }
 
   async atualizarEstimativaUsuario(opcao: number) {
-    const usuario = this.usuario();
+    let usuario = this.usuario();
 
     if (!usuario)
       return alert(
         'Falha ao encontrar o usuário. Por favor, acesse novamente a sessão.',
       );
 
-    const opcaoSelecionada = opcao === usuario.estimativa ? null : opcao;
+    const estimativa = opcao === usuario.estimativa ? null : opcao;
 
-    this.setEstimativaUsuario(opcaoSelecionada);
+    usuario = {...usuario, estimativa};
+
+    this.usuario.set(usuario);
 
     await this.supabaseService.atualizarEstimativaUsuario(
       usuario.id,
-      opcaoSelecionada,
+      estimativa,
     );
+  }
+
+  async mudarModoParaParticipante(): Promise<void> {
+    let usuario = this.usuario();
+
+    if (!usuario)
+      return alert(
+        'Falha ao encontrar o usuário. Por favor, acesse novamente a sessão.',
+      );
+
+    const observador = false;
+    usuario = { ...usuario, observador }
+    this.usuario.set(usuario);
+
+    await this.supabaseService.atualizarModoUsuario(usuario.id, observador);
   }
 
   async reiniciarEstimativaSessao() {

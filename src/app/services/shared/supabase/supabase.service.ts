@@ -13,7 +13,12 @@ export class SupabaseService {
   constructor() {
     this._supabase = createClient(
       environment.supabaseUrl,
-      environment.supabaseKey,
+      environment.supabaseKey, {
+        realtime: {
+          worker: true,
+          heartbeatIntervalMs: 15000
+        }
+      }
     );
   }
 

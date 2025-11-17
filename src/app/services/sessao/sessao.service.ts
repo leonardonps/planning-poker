@@ -257,8 +257,6 @@ export class SessaoService {
       return;
     }
 
-    console.log(this.canal.presenceState());
-
     await this.canal.track({
       usuarioId: usuario.id,
       usuarioNome: usuario.nome,

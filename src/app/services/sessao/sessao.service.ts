@@ -108,6 +108,7 @@ export class SessaoService {
         usuarioId = null;
         sessionStorage.removeItem('usuarioId');
         this.loadingSpinnerService.fechar();
+        return;
       }
 
       if (

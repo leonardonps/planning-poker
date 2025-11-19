@@ -14,8 +14,9 @@ export class ToastService {
     private hostRef: ViewContainerRef | undefined;
     private toastRef: ComponentRef<Toast> | undefined;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private timeoutId: any;
-    private toastSendoExibido: boolean = false;
+    private toastSendoExibido = false;
 
     registrarHost(hostRef: ViewContainerRef) {
         this.hostRef = hostRef;

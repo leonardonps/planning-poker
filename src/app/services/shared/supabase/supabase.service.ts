@@ -27,15 +27,22 @@ export class SupabaseService {
     return this._supabase;
   }
 
-  async inserirSessao(sessao: ISessao): Promise<void> {
-    const { error } = await this.supabase
+  async inserirSessao(sessao: ISessao): Promise<ISessao> {
+    const { data, error } = await this.supabase
       .from('sessao')
       .upsert([{ id: sessao.id, opcoes_estimativa: sessao.opcoesEstimativa }])
       .select()
       .single();
 
     if (error) {
-      alert(`Falha ao inserir sessão: ${error.message}`);
+      throw new Error(`Falha ao criar sessão: ${error.message}`);
+    }
+
+    return {
+      id: data.id,
+      opcoesEstimativa: data.opcoes_estimativa,
+      mediaEstimativasSessao: data.media_estimativas_sessao,
+      dataCriacao: data.data_criacao
     }
   }
 
@@ -63,8 +70,8 @@ export class SupabaseService {
     return sessaoDados;
   }
 
-  async inserirUsuario(usuario: IUsuario): Promise<void> {
-    const { error } = await this.supabase
+  async inserirUsuario(usuario: IUsuario): Promise<IUsuario> {
+    const { data, error } = await this.supabase
       .from('usuario')
       .upsert([
         {
@@ -78,7 +85,16 @@ export class SupabaseService {
       .single();
 
     if (error) {
-      alert(`Falha ao inserir usuario: ${error.message}`);
+      throw new Error(`Falha ao criar usuario: ${error.message}`);
+    }
+
+    return {
+      id: data.id,
+      nome: data.nome,
+      sessaoId: data.sessao_id,
+      estimativa: data.estimativa,
+      observador: data.observador,
+      dataCriacao: data.data_criacao
     }
   }
 

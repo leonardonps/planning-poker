@@ -57,17 +57,21 @@ export class ModalUsuario implements OnInit, AfterViewInit {
   async salvar(): Promise<void> {
     this.submitted = true;
 
-    if (this.formUsuario.valid) {
-      this.desabilitado = true;
+    if (!this.formUsuario.valid) {
+      return;
+    } 
+      
+    this.desabilitado = true;
+
+    try {
       const sessaoId = this.sessaoService.sessao()?.id;
 
-      if (!sessaoId)
-        return alert('Falha ao encontrar id da sessão. Crie uma nova sessão');
-
-      const usuarioId = gerarId(8);
+      if (!sessaoId) {
+        throw new Error('Sessão não encontrada');
+      }
 
       const novoUsuario: IUsuario = {
-        id: usuarioId,
+        id: gerarId(8),
         nome: this.formUsuario.controls['nome'].value,
         observador: this.formUsuario.controls['observador'].value,
         estimativa: null,
@@ -75,22 +79,22 @@ export class ModalUsuario implements OnInit, AfterViewInit {
         dataCriacao: null,
       };
 
-      await this.supabaseService.inserirUsuario(novoUsuario);
-
-      const usuarioCriado = await this.supabaseService.buscarUsuario(usuarioId);
+      const usuarioCriado = await this.supabaseService.inserirUsuario(novoUsuario);
 
       if (!usuarioCriado) {
-        alert('Não foi possível criar o usuário. Tente novamente!');
-        return;
+        throw new Error('Falha ao criar o usuário')
       }
 
       this.sessaoService.usuario.set(usuarioCriado);
-
+      
       await this.sessaoService.rastrearPresenca(usuarioCriado);
 
       sessionStorage.setItem('usuarioId', usuarioCriado.id);
-
       this.modalUsuarioService.destruirModal();
+    } catch (error) {
+      alert(error);
+    } finally {
+      this.desabilitado = false;
       this.submitted = false;
     }
   }

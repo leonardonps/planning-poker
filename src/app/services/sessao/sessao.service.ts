@@ -36,7 +36,7 @@ export class SessaoService {
     ),
   );
   usuariosPresentesId: WritableSignal<string[]> = signal([]);
-  usuario: WritableSignal<IUsuario | null> = signal(null);
+  usuario: WritableSignal<IUsuario | undefined> = signal(undefined);
 
   destruirCanal(): void {
     this.canal?.unsubscribe();
@@ -99,10 +99,14 @@ export class SessaoService {
 
   async inicializarSessao(sessaoId: string, usuarioId: string | null) {
     try {
-      await this.setSessao(sessaoId);
+      if (this.sessao()?.id !== sessaoId) {
+        await this.setSessao(sessaoId);
+      }
 
       if (!this.sessao()) {
         this.router.navigate(['/']);
+        usuarioId = null;
+        sessionStorage.removeItem('usuarioId');
         this.loadingSpinnerService.fechar();
       }
 
@@ -116,22 +120,11 @@ export class SessaoService {
 
       sessionStorage.setItem('sessaoId', sessaoId);
 
-      await this.criarCanalSessao(sessaoId);
-
       await this.setUsuarios(sessaoId);
+      
+      this.usuario.set(this.usuarios().find(usuario => usuario.id === usuarioId))
 
-      if (usuarioId) {
-        await this.setUsuario(usuarioId);
-
-        const usuario = this.usuario();
-
-        if (!usuario) {
-          alert('Usuário não encontrado! Tente novamente');
-          return;
-        }
-
-        await this.rastrearPresenca(usuario);
-      }
+      await this.criarCanalSessao(sessaoId);
 
       this.loadingSpinnerService.fechar();
       this.modalUsuarioService.abrir();
@@ -232,28 +225,50 @@ export class SessaoService {
           },
         )
         .subscribe(async (status) => {
-          if (status === 'SUBSCRIBED') {
-            resolve();
-          }
+          console.log(status);
 
-          if (status === 'CHANNEL_ERROR') {
-            reject();
+          switch (status) {
+            case 'SUBSCRIBED':
+              try {
+                const usuario = this.usuario();
+                if (usuario) {
+                  await this.rastrearPresenca(usuario);
+                }
+                resolve();
+              } catch (error) {
+                alert(error);
+              }
+              break;
+            case 'CHANNEL_ERROR':
+            case 'TIMED_OUT':
+            case 'CLOSED':
+              this.toastService.exibir({
+                mensagem: 'Conexão perdida',
+                duracao: 5000
+              });
+              reject();
+              break;
           }
         });
     });
   }
 
   async rastrearPresenca(usuario: IUsuario) {
-    if (!this.canal) {
-      alert('Nenhum canal foi encontrado. Tente novamente!');
-      return;
+    try {
+      if (!this.canal) {
+        throw new Error('Canal para o supabase não encontrado');
+      }
+      await this.canal.track({
+        usuarioId: usuario.id,
+        usuarioNome: usuario.nome,
+        onlineEm: new Date().toISOString(),
+      });
+      this.toastService.exibir({
+        mensagem: 'Conexão estabelecida'
+      });
+    } catch (error) {
+      alert(error);
     }
-
-    await this.canal.track({
-      usuarioId: usuario.id,
-      usuarioNome: usuario.nome,
-      onlineEm: new Date().toISOString(),
-    });
   }
 
   async atualizarEstimativaUsuario(opcao: number) {
@@ -313,12 +328,5 @@ export class SessaoService {
     const usuarios: IUsuario[] =
       await this.supabaseService.buscarUsuariosSessao(sessaoId);
     this.usuarios.set(usuarios);
-  }
-
-  async setUsuario(id: string): Promise<void> {
-    const usuario: IUsuario | null =
-      await this.supabaseService.buscarUsuario(id);
-
-    this.usuario.set(usuario);
   }
 }

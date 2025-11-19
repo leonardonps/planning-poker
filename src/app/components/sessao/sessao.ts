@@ -73,12 +73,16 @@ export class Sessao implements AfterViewInit, OnInit, OnDestroy {
   ngOnInit() {
     this.loadingSpinnerService.exibir();
 
-    const sessaoId = this.route.snapshot.paramMap.get('id');
-    const usuarioId = sessionStorage.getItem('usuarioId');
+    try { 
+      const sessaoId = this.route.snapshot.paramMap.get('id');
+      const usuarioId = sessionStorage.getItem('usuarioId');
+      
+      if (!sessaoId) throw new Error('Não foi possível achar o id da sessão');
 
-    if (!sessaoId) return alert(`Não foi possível achar o id da sessão`);
-
-    this.sessaoService.inicializarSessao(sessaoId, usuarioId);
+      this.sessaoService.inicializarSessao(sessaoId, usuarioId);
+    } catch (error) {
+      alert(error);
+    }
   }
 
   ngAfterViewInit() {

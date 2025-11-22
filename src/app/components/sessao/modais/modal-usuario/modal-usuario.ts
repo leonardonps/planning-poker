@@ -32,7 +32,7 @@ export class ModalUsuario implements OnInit, AfterViewInit {
   private sessaoService = inject(SessaoService);
   private modalUsuarioService = inject(ModalUsuarioService);
 
-  titulo = 'Novo usuário';
+  titulo = 'Novo participante';
 
   formUsuario!: FormGroup;
 

@@ -70,6 +70,8 @@ export class Sessao implements AfterViewInit, OnInit, OnDestroy {
     () => this.sessaoService.usuario()?.estimativa,
   );
 
+  exibirMenuConfiguracoes = false;
+
   ngOnInit() {
     this.loadingSpinnerService.exibir();
 
@@ -123,7 +125,12 @@ export class Sessao implements AfterViewInit, OnInit, OnDestroy {
     this.modalOpcoesEstimativaService.abrir();
   }
 
-  mudarModoParaParticipante() {
-    this.sessaoService.mudarModoParaParticipante();
+  mudarModoUsuario() {
+    this.sessaoService.mudarModoUsuario();
   }
+
+  abrirFecharMenuConfiguracoes() {
+    this.exibirMenuConfiguracoes = !this.exibirMenuConfiguracoes;
+  }
+
 }

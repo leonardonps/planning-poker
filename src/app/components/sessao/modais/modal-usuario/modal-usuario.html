@@ -23,8 +23,11 @@
         }
       </div>
       <div class="campo" id="campo-observador">
-        <label for="observador">É apenas um observador?</label>
-        <input type="checkbox" id="observador" formControlName="observador" />
+        <label for="observador">Deseja apenas observar?</label>
+        <label class="switch">
+          <input type="checkbox" id="observador" formControlName="observador">
+          <span class="slider round"></span>
+        </label>
       </div>
     </div>
     <button

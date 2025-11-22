@@ -292,19 +292,23 @@ export class SessaoService {
     );
   }
 
-  async mudarModoParaParticipante(): Promise<void> {
-    let usuario = this.usuario();
+  async mudarModoUsuario(): Promise<void> {
+    try {
+      let usuario = this.usuario();
+      
+      if(!usuario) {
+        throw new Error('Falha ao encontrar o usuário. Por favor, acesse novamente a sessão');
+      }
+      const observador = !this.usuario()?.observador;
+      const estimativa = null;
 
-    if (!usuario)
-      return alert(
-        'Falha ao encontrar o usuário. Por favor, acesse novamente a sessão.',
-      );
-
-    const observador = false;
-    usuario = { ...usuario, observador }
-    this.usuario.set(usuario);
-
-    await this.supabaseService.atualizarModoUsuario(usuario.id, observador);
+      usuario = { ...usuario, observador, estimativa }
+      this.usuario.set(usuario);
+      await this.supabaseService.atualizarModoUsuario(usuario.id, observador);
+      await this.supabaseService.atualizarEstimativaUsuario(usuario.id, estimativa);
+    } catch (error) {
+      alert(error);
+    }
   }
 
   async reiniciarEstimativaSessao() {

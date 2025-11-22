@@ -1,9 +1,10 @@
 @use 'cores' as *;
+@use 'breakpoints' as *;
 
 form {
     display: flex;
     flex-flow: column nowrap;
-    justify-content: space-between;
+    justify-content: space-around;
     align-items: center;
 
     width: 100%;
@@ -15,6 +16,8 @@ form {
     height: 85%;
 
     padding: 3%;
+    
+    margin-bottom: 15px;
     
     border: 1px solid $cor-secundaria;
     border-radius: 10px;
@@ -36,8 +39,7 @@ form {
 
 #usuario-nome {
     height: 45px;
-    width: 60%;
-    min-width: 200px;
+    width: 100%;
     
     margin-bottom: 1%;
 
@@ -57,12 +59,88 @@ form {
     margin-right: 1%;
 }
 
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 35px;
+    height: 20px;
+
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: $cor-terciaria;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 4px;
+    bottom: 3px;
+    background-color: $cor-quartenaria;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+input:checked + .slider {
+    background-color: $cor-secundaria;
+}
+
+input:checked + .slider:before {
+    -webkit-transition: translateX(13px);
+    transition: translateX(13px);
+    transform: translateX(13px);
+}
+
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round:before {
+    border-radius: 50%
+}
+
 #observador:hover {
     cursor: pointer;
 }
 
 #salvar {
-    height: 8%;
-    min-height: 39px;
+    height: 39px;
     width: 35%;
+    margin-bottom: 5px;
+}
+
+@include tablet-up {
+    #usuario-nome {
+        width: 85%;
+    }
+
+    #salvar {
+        margin-bottom: 0;
+    }
+}
+
+@include desktop-up {
+    #usuario-nome {
+        width: 75%;
+    }
+
+    #campos {
+        margin-bottom: 20px;
+    }   
 }

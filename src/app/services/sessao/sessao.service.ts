@@ -43,23 +43,6 @@ export class SessaoService {
     this.canal = null;
   }
 
-  atualizarMediaEstimativaSessao(estimativas: number[]) {
-    const sessao = this.sessao();
-
-    if (!sessao)
-      return alert(
-        'Falha ao encontrar a sessão. Por favor, acesse novamente a sessão.',
-      );
-
-    const mediaEstimativasSessao =
-      this.calcularMediaEstimativasSessao(estimativas);
-
-    this.supabaseService.atualizarEstimativaSessao(
-      sessao.id,
-      truncarNumero(mediaEstimativasSessao, 1),
-    );
-  }
-
   copiarSessaoLink(sessaoLink: string): void {
     try {
       navigator.clipboard.writeText(sessaoLink).then(() =>
@@ -122,8 +105,10 @@ export class SessaoService {
       sessionStorage.setItem('sessaoId', sessaoId);
 
       await this.setUsuarios(sessaoId);
-      
-      this.usuario.set(this.usuarios().find(usuario => usuario.id === usuarioId))
+
+      this.usuario.set(
+        this.usuarios().find((usuario) => usuario.id === usuarioId),
+      );
 
       await this.criarCanalSessao(sessaoId);
 
@@ -136,7 +121,13 @@ export class SessaoService {
 
   async criarCanalSessao(sessaoId: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.canal = this.supabaseService.supabase.channel(`sessao-${sessaoId}`);
+      this.canal = this.supabaseService.supabase.channel(`sessao:${sessaoId}`, {
+        config: {
+          broadcast: {
+            self: true,
+          },
+        },
+      });
 
       this.canal
         .on(
@@ -226,8 +217,6 @@ export class SessaoService {
           },
         )
         .subscribe(async (status) => {
-          console.log(status);
-
           switch (status) {
             case 'SUBSCRIBED':
               try {
@@ -245,13 +234,25 @@ export class SessaoService {
             case 'CLOSED':
               this.toastService.exibir({
                 mensagem: 'Conexão perdida',
-                duracao: 5000
+                duracao: 5000,
               });
               reject();
               break;
           }
         });
     });
+  }
+
+  async setSessao(id: string): Promise<void> {
+    const sessao: ISessao | null = await this.supabaseService.buscarSessao(id);
+
+    this.sessao.set(sessao);
+  }
+
+  async setUsuarios(sessaoId: string): Promise<void> {
+    const usuarios: IUsuario[] =
+      await this.supabaseService.buscarUsuariosSessao(sessaoId);
+    this.usuarios.set(usuarios);
   }
 
   async rastrearPresenca(usuario: IUsuario) {
@@ -265,7 +266,7 @@ export class SessaoService {
         onlineEm: new Date().toISOString(),
       });
       this.toastService.exibir({
-        mensagem: 'Conexão estabelecida'
+        mensagem: 'Conexão estabelecida',
       });
     } catch (error) {
       alert(error);
@@ -282,7 +283,7 @@ export class SessaoService {
 
     const estimativa = opcao === usuario.estimativa ? null : opcao;
 
-    usuario = {...usuario, estimativa};
+    usuario = { ...usuario, estimativa };
 
     this.usuario.set(usuario);
 
@@ -292,20 +293,23 @@ export class SessaoService {
     );
   }
 
-  async mudarModoUsuario(): Promise<void> {
+  async atualizarMediaEstimativaSessao(estimativas: number[]) {
     try {
-      let usuario = this.usuario();
-      
-      if(!usuario) {
-        throw new Error('Falha ao encontrar o usuário. Por favor, acesse novamente a sessão');
-      }
-      const observador = !this.usuario()?.observador;
-      const estimativa = null;
+      const sessao = this.sessao();
 
-      usuario = { ...usuario, observador, estimativa }
-      this.usuario.set(usuario);
-      await this.supabaseService.atualizarModoUsuario(usuario.id, observador);
-      await this.supabaseService.atualizarEstimativaUsuario(usuario.id, estimativa);
+      if (!sessao) {
+        throw new Error(
+          'Falha ao encontrar a sessão. Por favor, acesse novamente a sessão.',
+        );
+      }
+
+      const mediaEstimativasSessao =
+        this.calcularMediaEstimativasSessao(estimativas);
+
+      await this.supabaseService.atualizarEstimativaSessao(
+        sessao.id,
+        truncarNumero(mediaEstimativasSessao, 1),
+      );
     } catch (error) {
       alert(error);
     }
@@ -323,15 +327,27 @@ export class SessaoService {
     await this.supabaseService.atualizarEstimativasUsuarios(sessao.id, null);
   }
 
-  async setSessao(id: string): Promise<void> {
-    const sessao: ISessao | null = await this.supabaseService.buscarSessao(id);
+  async mudarModoUsuario(): Promise<void> {
+    try {
+      let usuario = this.usuario();
 
-    this.sessao.set(sessao);
-  }
+      if (!usuario) {
+        throw new Error(
+          'Falha ao encontrar o usuário. Por favor, acesse novamente a sessão',
+        );
+      }
+      const observador = !this.usuario()?.observador;
+      const estimativa = null;
 
-  async setUsuarios(sessaoId: string): Promise<void> {
-    const usuarios: IUsuario[] =
-      await this.supabaseService.buscarUsuariosSessao(sessaoId);
-    this.usuarios.set(usuarios);
+      usuario = { ...usuario, observador, estimativa };
+      this.usuario.set(usuario);
+      await this.supabaseService.atualizarModoUsuario(usuario.id, observador);
+      await this.supabaseService.atualizarEstimativaUsuario(
+        usuario.id,
+        estimativa,
+      );
+    } catch (error) {
+      alert(error);
+    }
   }
 }

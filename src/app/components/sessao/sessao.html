@@ -72,8 +72,7 @@
   <div id="mesa">
     @if (
       this.estimativasUsuarios().length > 0 &&
-      !this.mediaEstimativasSessao() &&
-      this.mediaEstimativasSessao() !== 0
+      (typeof this.mediaEstimativasSessao() !== "number")
     ) {
       <button
         type="button"
@@ -150,7 +149,7 @@
     </div>
   }
 </section>
-
 <ng-container #toast></ng-container>
 <ng-container #modal></ng-container>
 <ng-container #loading><ng-container></ng-container></ng-container>
+

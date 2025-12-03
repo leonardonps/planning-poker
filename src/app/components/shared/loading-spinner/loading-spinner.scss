@@ -7,18 +7,3 @@
     height: 100vh;
     width: 100vw;
 }
-
-.spinner {
-    width: 50px;
-    height: 50px;
-    border: 5px solid $cor-terciaria;
-    border-top-color: $cor-secundaria;
-    border-radius: 50%;
-    animation: spin 1s linear infinite; 
-}
-
-@keyframes spin {
-    to { 
-        transform: rotate(360deg)
-    }
-}

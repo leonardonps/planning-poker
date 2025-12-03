@@ -2,7 +2,6 @@ import {
   AfterViewInit,
   Component,
   computed,
-  HostBinding,
   inject,
   OnDestroy,
   OnInit,
@@ -32,8 +31,6 @@ export class Sessao implements AfterViewInit, OnInit, OnDestroy {
   toastContainerRef!: ViewContainerRef;
   @ViewChild('modal', { read: ViewContainerRef })
   modalContainerRef!: ViewContainerRef;
-  @HostBinding('class') classname =
-    'flex-column justify-content-space-between align-items-center';
 
   private route = inject(ActivatedRoute);
 

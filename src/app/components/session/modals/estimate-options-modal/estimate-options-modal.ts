@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { BaseModal } from '../../../shared/base-modal/base-modal';
 import {
 	FormControl,
@@ -25,9 +25,10 @@ export class EstimateOptionsModal implements OnInit {
 
 	protected title = 'Editar opções de estimativa';
 
-	estimateOptionsForm!: FormGroup;
-	submitted = false;
-	disabled = false;
+	protected estimateOptionsForm!: FormGroup;
+
+	protected submitted = signal(false);
+	protected disabled = signal(false);
 
 	ngOnInit(): void {
 		const currentEstimateOptions = this.sessionService
@@ -47,13 +48,13 @@ export class EstimateOptionsModal implements OnInit {
 	}
 
 	async save() {
-		this.submitted = true;
+		this.submitted.set(true);
 
 		if (!this.estimateOptionsForm.valid) {
 			return;
 		}
 
-		this.disabled = true;
+		this.disabled.set(true);
 
 		try {
 			const sessionId = this.sessionService.getSession().id;
@@ -68,10 +69,9 @@ export class EstimateOptionsModal implements OnInit {
 				.sort((a, b) => a - b)
 				.join(', ');
 
-			await this.supabaseService.updateSessionEstimateOptions(
-				sessionId,
-				sortedEstimateOptions,
-			);
+			await this.supabaseService.updateSession(sessionId, {
+				estimateOptions: sortedEstimateOptions,
+			});
 
 			await this.supabaseService.updateUserEstimates(sessionId, null);
 
@@ -79,8 +79,8 @@ export class EstimateOptionsModal implements OnInit {
 		} catch (error) {
 			alert(error);
 		} finally {
-			this.submitted = false;
-			this.disabled = false;
+			this.submitted.set(false);
+			this.disabled.set(false);
 		}
 	}
 }

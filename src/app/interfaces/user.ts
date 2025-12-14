@@ -9,3 +9,7 @@ export interface User {
 }
 
 export type UserCreate = Omit<User, 'createdAt' | 'updatedAt'>;
+
+export type UserUpdate = Partial<
+	Omit<User, 'id' | 'sessionId' | 'createdAt' | 'updatedAt'>
+>;

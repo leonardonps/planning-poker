@@ -20,7 +20,7 @@
 				placeholder="Opções de estimativa"
 				formControlName="estimateOptions"
 			/>
-			@if (estimateOptionsForm.invalid && this.submitted) { @if (
+			@if (estimateOptionsForm.invalid && this.submitted()) { @if (
 			estimateOptionsForm.controls["estimateOptions"].hasError( "required" ) ) {
 			<small>Campo obrigatório</small>
 			} @else if ( estimateOptionsForm.controls["estimateOptions"].hasError(
@@ -37,7 +37,7 @@
 		id="save-button"
 		form="estimate-options-form"
 		class="button"
-		[disabled]="this.disabled"
+		[disabled]="this.disabled()"
 		modal-actions
 	>
 		Salvar

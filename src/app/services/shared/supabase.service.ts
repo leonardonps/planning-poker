@@ -1,14 +1,20 @@
 import { Injectable } from '@angular/core';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { Session, SessionCreate } from '../../interfaces/session';
+import {
+	Session,
+	SessionCreate,
+	SessionUpdate,
+} from '../../interfaces/session';
 import { PostgrestBaseError } from '../../errors/PostgrestBaseError';
 import { SessionNotFoundError } from '../../errors/SessionNotFoundError';
-import { User, UserCreate } from '../../interfaces/user';
+import { User, UserCreate, UserUpdate } from '../../interfaces/user';
 import {
 	SessionResult,
 	SessionResultCreate,
+	SessionResultUpdate,
 } from '../../interfaces/session-results';
 import { environment } from '../../../environments/environment';
+import { toSnakeCase } from '../../utils/string/camel-case-to-snake-case';
 
 @Injectable({
 	providedIn: 'root',
@@ -53,6 +59,22 @@ export class SupabaseService {
 		};
 	}
 
+	async updateSession(sessionId: string, updatedSession: SessionUpdate) {
+		const updatedSessionSnakeCase = toSnakeCase(updatedSession);
+
+		const { error } = await this.supabase
+			.from('session')
+			.update(updatedSessionSnakeCase)
+			.eq('id', sessionId);
+
+		if (error) {
+			throw new PostgrestBaseError(
+				'Falha ao atualizar dados da sessão: ',
+				error,
+			);
+		}
+	}
+
 	async getSession(id: string): Promise<Session> {
 		const { data, error } = await this.supabase
 			.from('session')
@@ -81,35 +103,6 @@ export class SupabaseService {
 		return sessionData;
 	}
 
-	async insertUser(user: UserCreate): Promise<User> {
-		const { data, error } = await this.supabase
-			.from('user')
-			.upsert([
-				{
-					id: user.id,
-					name: user.name,
-					is_observer: user.isObserver,
-					session_id: user.sessionId,
-				},
-			])
-			.select()
-			.single();
-
-		if (error) {
-			throw new PostgrestBaseError('Falha ao criar usuario:', error);
-		}
-
-		return {
-			id: data.id,
-			name: data.name,
-			sessionId: data.session_id,
-			estimate: data.estimate,
-			isObserver: data.is_observer,
-			createdAt: data.created_at,
-			updatedAt: data.updated_at,
-		};
-	}
-
 	async getSessionUsers(sessionId: string): Promise<User[]> {
 		const { data, error } = await this.supabase
 			.from('user')
@@ -134,32 +127,40 @@ export class SupabaseService {
 		}));
 	}
 
-	async updateUserEstimate(
-		userId: string,
-		estimate: number | null,
-	): Promise<void> {
-		const { error } = await this.supabase
+	async insertUser(user: UserCreate): Promise<User> {
+		const userSnakeCase = toSnakeCase(user);
+		const { data, error } = await this.supabase
 			.from('user')
-			.update({ estimate: estimate })
-			.eq('id', userId);
+			.upsert([userSnakeCase])
+			.select()
+			.single();
 
 		if (error) {
-			throw new PostgrestBaseError(
-				'Falha ao atualizar estimativa do usuário:',
-				error,
-			);
+			throw new PostgrestBaseError('Falha ao criar usuario:', error);
 		}
+
+		return {
+			id: data.id,
+			name: data.name,
+			sessionId: data.session_id,
+			estimate: data.estimate,
+			isObserver: data.is_observer,
+			createdAt: data.created_at,
+			updatedAt: data.updated_at,
+		};
 	}
 
-	async updateUserMode(userId: string, isObserver: boolean): Promise<void> {
+	async updateUser(userId: string, updatedUser: UserUpdate): Promise<void> {
+		const updatedUserSnakeCase = toSnakeCase(updatedUser);
+
 		const { error } = await this.supabase
 			.from('user')
-			.update({ is_observer: isObserver })
+			.update(updatedUserSnakeCase)
 			.eq('id', userId);
 
 		if (error) {
 			throw new PostgrestBaseError(
-				'Falha ao atualizar modo do usuário:',
+				'Falha ao atualizar dados do usuário:',
 				error,
 			);
 		}
@@ -174,40 +175,6 @@ export class SupabaseService {
 		if (error) {
 			throw new PostgrestBaseError(
 				'Falha ao atualizar estimativas dos usuários:',
-				error,
-			);
-		}
-	}
-
-	async updateSessionAverageEstimate(
-		sessionId: string,
-		averageEstimate: number | null,
-	) {
-		const { error } = await this.supabase
-			.from('session')
-			.update({ average_estimate: averageEstimate })
-			.eq('id', sessionId);
-
-		if (error) {
-			throw new PostgrestBaseError(
-				'Falha ao atualizar estimativa da sessão:',
-				error,
-			);
-		}
-	}
-
-	async updateSessionEstimateOptions(
-		sessionId: string,
-		estimateOptions: string,
-	) {
-		const { error } = await this.supabase
-			.from('session')
-			.update({ estimate_options: estimateOptions })
-			.eq('id', sessionId);
-
-		if (error) {
-			throw new PostgrestBaseError(
-				'Falha ao atualizar opções de estimativas',
 				error,
 			);
 		}
@@ -274,18 +241,20 @@ export class SupabaseService {
 		}
 	}
 
-	async updateSessionResultDescription(
+	async updateSessionResult(
 		sessionResultId: string,
-		description: string,
+		updatedSessionResult: SessionResultUpdate,
 	) {
+		const updatedSessionResultSnakeCase = toSnakeCase(updatedSessionResult);
+
 		const { error } = await this.supabase
 			.from('session_results')
-			.update({ description: description })
+			.update(updatedSessionResultSnakeCase)
 			.eq('id', sessionResultId);
 
 		if (error) {
 			throw new PostgrestBaseError(
-				'Falha ao atualizar descrição da estimativa',
+				'Falha ao atualizar dados de uma estimativa',
 				error,
 			);
 		}

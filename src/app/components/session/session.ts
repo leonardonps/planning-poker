@@ -119,7 +119,7 @@ export class Session implements AfterViewInit, OnInit, OnDestroy {
 		await this.sessionService.toggleUserMode();
 	}
 
-	toggleSettingsMenu() {
+	onToggleSettingsMenu() {
 		this.settingsMenuOpen = !this.settingsMenuOpen;
 	}
 

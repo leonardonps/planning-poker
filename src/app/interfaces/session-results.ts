@@ -12,3 +12,7 @@ export type SessionResultCreate = Omit<
 	SessionResult,
 	'id' | 'createdAt' | 'updatedAt'
 >;
+
+export type SessionResultUpdate = Partial<
+	Omit<SessionResult, 'id' | 'createdAt' | 'updatedAt'>
+>;

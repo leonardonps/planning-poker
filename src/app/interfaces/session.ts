@@ -7,3 +7,7 @@ export interface Session {
 }
 
 export type SessionCreate = Omit<Session, 'createdAt' | 'updatedAt'>;
+
+export type SessionUpdate = Partial<
+	Omit<Session, 'id' | 'createdAt' | 'updatedAt'>
+>;

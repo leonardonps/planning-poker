@@ -6,7 +6,7 @@
 			id="settings-button"
 			class="material-icons button"
 			[class.selected]="this.settingsMenuOpen"
-			(click)="toggleSettingsMenu()"
+			(click)="onToggleSettingsMenu()"
 		>
 			settings
 		</button>
@@ -29,7 +29,7 @@
 					class="button"
 					(click)="toggleUserMode()"
 				>
-					{{ this.sessionService.user()?.isObserver? 'Mudar para modo
+					{{ this.sessionService.user()?.isObserver ? 'Mudar para modo
 					participante' : 'Mudar para modo observador' }}
 				</button>
 			</li>

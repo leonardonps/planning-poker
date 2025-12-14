@@ -195,7 +195,7 @@ export class SessionService {
 									? {
 											...user,
 											estimate: payload.new['estimate'],
-											observer: payload.new['observer'],
+											isObserver: payload.new['is_observer'],
 										}
 									: user,
 							),
@@ -295,10 +295,9 @@ export class SessionService {
 
 			const estimate = option === user.estimate ? null : option;
 
-			this.user.update((user) =>
-				user ? { ...user, estimate: estimate } : user,
-			);
-			await this.supabaseService.updateUserEstimate(user.id, estimate);
+			this.user.update((user) => (user ? { ...user, estimate } : user));
+
+			await this.supabaseService.updateUser(user.id, { estimate });
 		} catch (error) {
 			alert(error);
 		}
@@ -313,10 +312,7 @@ export class SessionService {
 				1,
 			);
 
-			await this.supabaseService.updateSessionAverageEstimate(
-				session.id,
-				averageEstimate,
-			);
+			await this.supabaseService.updateSession(session.id, { averageEstimate });
 
 			await this.supabaseService.insertSessionResults({
 				generatedBy: this.getUser().name,
@@ -332,7 +328,9 @@ export class SessionService {
 	async restartSessionAverageEstimate() {
 		try {
 			const session = this.getSession();
-			await this.supabaseService.updateSessionAverageEstimate(session.id, null);
+			await this.supabaseService.updateSession(session.id, {
+				averageEstimate: null,
+			});
 			await this.supabaseService.updateUserEstimates(session.id, null);
 		} catch (error) {
 			alert(error);
@@ -354,19 +352,16 @@ export class SessionService {
 
 	async toggleUserMode(): Promise<void> {
 		try {
-			let user = this.getUser();
+			const user = this.getUser();
 
 			const isObserver = !user.isObserver;
 			const estimate = null;
 
-			user = { ...user, isObserver, estimate };
-
 			this.user.update((user) =>
-				user ? { ...user, isObserver: isObserver, estimate: estimate } : user,
+				user ? { ...user, isObserver, estimate } : user,
 			);
 
-			await this.supabaseService.updateUserMode(user.id, isObserver);
-			await this.supabaseService.updateUserEstimate(user.id, estimate);
+			await this.supabaseService.updateUser(user.id, { estimate, isObserver });
 		} catch (error) {
 			alert(error);
 		}
@@ -397,10 +392,9 @@ export class SessionService {
 		sessionResultId: string,
 		description: string,
 	) {
-		await this.supabaseService.updateSessionResultDescription(
-			sessionResultId,
+		await this.supabaseService.updateSessionResult(sessionResultId, {
 			description,
-		);
+		});
 		this.sessionResults.update((sessionResults) =>
 			sessionResults.map((sessionResult) =>
 				sessionResult.id === sessionResultId

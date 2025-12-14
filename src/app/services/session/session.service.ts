@@ -226,8 +226,8 @@ export class SessionService {
 							session
 								? {
 										...session,
-										estimateOptions: estimateOptions,
-										averageEstimate: averageEstimate,
+										estimateOptions,
+										averageEstimate,
 									}
 								: session,
 						);

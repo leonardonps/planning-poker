@@ -63,8 +63,12 @@ export class Session implements AfterViewInit, OnInit, OnDestroy {
 		() => this.sessionService.session()?.averageEstimate,
 	);
 
-	protected selectedOptions: Signal<number | null | undefined> = computed(
+	protected selectedOption: Signal<number | null | undefined> = computed(
 		() => this.sessionService.user()?.estimate,
+	);
+
+	protected userMode: Signal<boolean | undefined> = computed(
+		() => this.sessionService.user()?.isObserver,
 	);
 
 	protected settingsMenuOpen = false;

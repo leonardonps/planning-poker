@@ -29,8 +29,8 @@
 					class="button"
 					(click)="toggleUserMode()"
 				>
-					{{ this.sessionService.user()?.isObserver ? 'Mudar para modo
-					participante' : 'Mudar para modo observador' }}
+					{{ this.userMode() ? 'Mudar para modo participante' : 'Mudar para modo
+					observador' }}
 				</button>
 			</li>
 			<li class="item">
@@ -102,7 +102,7 @@
 		</p>
 		}
 	</div>
-	@if (!this.sessionService.user()?.isObserver) {
+	@if (!this.userMode()) {
 	<div id="estimate-options">
 		<ul>
 			@if (typeof this.avegareEstimate() !== 'number' && this.estimateOptions())
@@ -123,9 +123,9 @@
 					type="button"
 					class="estimate-option"
 					[class.selected-estimate-option]="
-                option === this.selectedOptions()
+                option === this.selectedOption()
               "
-					[class.estimate-option-highlight]="!this.avegareEstimate()"
+					[class.estimate-option-highlight]="option !== this.selectedOption()"
 					[disabled]="this.avegareEstimate()"
 					(click)="selectEstimate(option)"
 				>

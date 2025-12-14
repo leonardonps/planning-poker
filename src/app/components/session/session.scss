@@ -1,0 +1,378 @@
+@use "colors" as *;
+@use "breakpoints" as *;
+
+:host {
+  display: grid;
+  grid-template-rows: 90px 1fr;
+  min-height: 100vh;
+}
+
+header {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: center;
+  align-items: center;
+
+  width: 100%;
+  height: 100%;
+
+  padding: 0% 2% 0% 2%;
+
+  margin-bottom: 3%;
+}
+
+h1 {
+  display: flex;
+  align-items: center;
+
+  width: 80%;
+  height: 100%;
+
+  font-size: 1.65rem;
+}
+
+#settings-dropdown {
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: center;
+  align-items: flex-end;
+
+  position: relative;
+
+  width: 20%;
+  height: 100%;
+}
+
+#settings-button {
+  width: 50px;
+  height: 45px;
+}
+
+.selected {
+  background-color: $color-secondary;
+  color: $color-primary;
+}
+
+#settings-options-list {
+  position: absolute;
+  top: 85%;
+  right: 2;
+  z-index: 1;
+
+  width: 200px;
+
+  overflow: auto;
+
+  padding: 1%;
+
+  border: 1px solid $color-secondary;
+  border-radius: 5px;
+
+  animation: slideScale 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: top right;
+}
+
+@keyframes slideScale {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+#settings-options-list > li > button {
+  width: 100%;
+  height: 35px;
+
+  border: none;
+  border-radius: 5px;
+
+  font-size: 0.85rem;
+}
+
+main {
+  display: flex;
+  flex-flow: column;
+  justify-content: space-evenly;
+  align-items: center;
+
+  width: 100%;
+}
+
+#users {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: center;
+  align-items: center;
+
+  width: 95%;
+  margin-bottom: 3%;
+}
+
+.user {
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: flex-start;
+  align-items: center;
+
+  height: 110px;
+  width: 92px;
+
+  margin-bottom: 5px;
+}
+
+.user-estimate {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  width: 65%;
+  height: 75%;
+
+  margin-bottom: 5px;
+
+  border-radius: 5px;
+}
+
+.unselected-estimate {
+  color: $color-tertiary;
+  border: 1px dashed $color-tertiary;
+}
+
+.selected-estimate {
+  background-color: $color-secondary;
+  border: 1px solid $color-secondary;
+  color: $color-primary;
+}
+
+.observer-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 95%;
+  width: 95%;
+  color: inherit;
+}
+
+.user-name {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: center;
+  align-items: center;
+
+  height: 25%;
+  width: 90%;
+
+  word-break: break-word;
+
+  font-size: 0.75rem;
+}
+
+.user-name > strong {
+  text-align: center;
+}
+
+#session-estimate-card {
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: center;
+  align-items: center;
+
+  height: 160px;
+  width: 280px;
+  min-height: 160px;
+  min-width: 280px;
+
+  margin-bottom: 3%;
+
+  padding: 1%;
+
+  border: 1px solid $color-secondary;
+  border-radius: 10px;
+}
+
+#session-estimate-card > p {
+  text-align: center;
+}
+
+#session-estimate-card > #session-average-estimate{
+  margin-bottom: 5%;
+}
+
+#estimate-button,
+#restart-button {
+  height: 45px;
+  width: 60%;
+}
+
+#estimate-options {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: center;
+  align-items: center;
+
+  width: 90%;
+  min-width: 290px;
+
+  margin-bottom: 3%;
+  padding: 1%;
+
+  border: 1px solid $color-secondary;
+  border-radius: 10px;
+}
+
+#estimate-options > ul {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: center;
+  align-items: center;
+
+  width: 100%;
+}
+
+#estimate-options > ul > li {
+  display: flex;
+  flex-direction: row nowrap;
+  justify-content: center;
+  align-items: center;
+
+  height: 72px;
+  width: 51px;
+
+  margin: 1% 1% 1.5% 1%;
+}
+
+.estimate-option {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  height: 100%;
+  width: 100%;
+
+  border: 1px solid $color-secondary;
+  border-radius: 5px;
+
+  font-size: 1rem;
+}
+
+.selected-estimate-option:hover {
+  background-color: rgb(230, 230, 230);
+  color: $color-primary;
+}
+
+.estimate-option-highlight:hover {
+  position: relative;
+  top: -3px;
+
+  background-color: $color-quaternary;
+  color: $color-secondary;
+
+  cursor: pointer;
+}
+
+.selected-estimate-option {
+  background-color: $color-secondary;
+  color: $color-primary;
+
+  position: relative;
+  top: -3px;
+}
+
+#edit-estimate-options-button {
+  height: 55%;
+  width: 75%;
+
+  font-size: 100%;
+}
+
+#observer-mode-card {
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: space-evenly;
+  align-items: center;
+
+  width: 90%;
+  min-width: 290px;
+
+  margin-bottom: 3%;
+  padding: 3%;
+
+  border: 1px solid $color-secondary;
+  border-radius: 10px;
+}
+
+#observer-mode-text {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  height: 100%;
+  width: 100%;
+
+  margin-bottom: 2%;
+
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+#toggle-user-mode-button {
+  height: 55px;
+  min-width: 190px;
+  border-radius: 10px;
+}
+
+@include tablet-up {
+  h1 {
+    font-size: 2rem;
+  }
+
+  header,
+  #session-estimate-card,
+  #estimate-options,
+  #observer-mode-card {
+    margin-bottom: 1%;
+  }
+
+  #settings-options-list {
+    width: 250px;
+  }
+
+  #settings-options-list > li > button {
+    font-size: 1rem;
+  }
+
+  #users {
+    margin-bottom: 0%;
+  }
+
+  #estimate-options {
+    width: 80%;
+    padding: 0.5%;
+  }
+
+  #estimate-options > ul > li {
+    height: 75px;
+    width: 50px;
+
+    margin: 0.5%;
+  }
+
+  #observer-mode-card {
+    width: 80%;
+    padding: 1.5%;
+  }
+
+  #observer-mode-text {
+    font-size: 1rem;
+  }
+
+  #toggle-user-mode-button {
+    height: 50px;
+    border-radius: 10px;
+    font-size: 1rem;
+  }
+}

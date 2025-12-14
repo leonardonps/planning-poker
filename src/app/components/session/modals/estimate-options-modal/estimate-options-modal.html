@@ -1,0 +1,45 @@
+<app-base-modal [title]="this.title">
+	<form
+		id="estimate-options-form"
+		[formGroup]="estimateOptionsForm"
+		(ngSubmit)="save()"
+		modal-body
+	>
+		<div id="estimate-options-fields">
+			<label for="estimate-options">
+				Opções de estimativa
+				<span
+					id="estimate-options-tooltip"
+					title="Campo precisa ser preenchido no seguinte formato: 1, 2.5, 3.0..."
+					>&#xe887;</span
+				>
+			</label>
+			<input
+				type="text"
+				id="estimate-options"
+				placeholder="Opções de estimativa"
+				formControlName="estimateOptions"
+			/>
+			@if (estimateOptionsForm.invalid && this.submitted) { @if (
+			estimateOptionsForm.controls["estimateOptions"].hasError( "required" ) ) {
+			<small>Campo obrigatório</small>
+			} @else if ( estimateOptionsForm.controls["estimateOptions"].hasError(
+			"invalidFormat" ) ) {
+			<small
+				>Formatação inválida. Números devem estar separados por ", " e serem
+				positivos</small
+			>
+			} }
+		</div>
+	</form>
+	<button
+		type="submit"
+		id="save-button"
+		form="estimate-options-form"
+		class="button"
+		[disabled]="this.disabled"
+		modal-actions
+	>
+		Salvar
+	</button>
+</app-base-modal>

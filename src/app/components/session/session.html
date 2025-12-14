@@ -1,0 +1,157 @@
+<header>
+	<h1>Planning Poker</h1>
+	<div id="settings-dropdown">
+		<button
+			type="button"
+			id="settings-button"
+			class="material-icons button"
+			[class.selected]="this.settingsMenuOpen"
+			(click)="toggleSettingsMenu()"
+		>
+			settings
+		</button>
+		@if (this.settingsMenuOpen) {
+		<ul id="settings-options-list">
+			<li class="item">
+				<button
+					type="button"
+					id="invite-team-button"
+					(click)="copySessionLink()"
+					class="button"
+				>
+					Convidar sua equipe
+				</button>
+			</li>
+			<li class="item">
+				<button
+					type="button"
+					id="toggle-user-mode-button"
+					class="button"
+					(click)="toggleUserMode()"
+				>
+					{{ this.sessionService.user()?.isObserver? 'Mudar para modo
+					participante' : 'Mudar para modo observador' }}
+				</button>
+			</li>
+			<li class="item">
+				<button
+					type="button"
+					id="session-results-button"
+					(click)="onOpenSessionResultsModal()"
+					class="button"
+				>
+					Ver histórico da sessão
+				</button>
+			</li>
+		</ul>
+		}
+	</div>
+</header>
+<main>
+	<div id="users">
+		@for (user of this.presentUsers(); track $index; let i = $index) {
+		<div class="user">
+			@if (!user.isObserver) {
+			<div
+				class="user-estimate"
+				[class.unselected-estimate]="user.estimate === null"
+				[class.selected-estimate]="typeof user.estimate === 'number'"
+			>
+				{{ typeof this.avegareEstimate() === 'number' && user.estimate ?
+				user.estimate : '?' }}
+			</div>
+			} @else {
+			<div class="user-estimate unselected-estimate">
+				<span class="material-symbols-outlined observer-icon"
+					>eyeglasses_2</span
+				>
+			</div>
+			}
+			<div class="user-name">
+				<strong>{{ user.name }}</strong>
+			</div>
+		</div>
+		}
+	</div>
+	<div id="session-estimate-card">
+		@if ( this.userEstimates().length > 0 && (typeof this.avegareEstimate() !==
+		"number") ) {
+		<button
+			type="button"
+			class="button"
+			id="estimate-button"
+			(click)="updateSessionAverageEstimate()"
+		>
+			Estimar
+		</button>
+		} @else if (typeof this.avegareEstimate() === "number") {
+		<p>Estimativa da equipe:</p>
+		<p id="session-average-estimate">{{ this.avegareEstimate() }}</p>
+		<button
+			type="button"
+			class="button"
+			id="restart-button"
+			(click)="restartSessionAverageEstimate()"
+		>
+			Reiniciar
+		</button>
+		} @else {
+		<p>
+			Pelo menos, um participante precisa selecionar sua estimativa. Por favor,
+			aguarde.
+		</p>
+		}
+	</div>
+	@if (!this.sessionService.user()?.isObserver) {
+	<div id="estimate-options">
+		<ul>
+			@if (typeof this.avegareEstimate() !== 'number' && this.estimateOptions())
+			{
+			<li>
+				<button
+					type="button"
+					class="button material-icons"
+					id="edit-estimate-options-button"
+					(click)="onOpenEditEstimateOptionsModal()"
+				>
+					edit
+				</button>
+			</li>
+			} @for (option of this.estimateOptions(); track $index) {
+			<li>
+				<button
+					type="button"
+					class="estimate-option"
+					[class.selected-estimate-option]="
+                option === this.selectedOptions()
+              "
+					[class.estimate-option-highlight]="!this.avegareEstimate()"
+					[disabled]="this.avegareEstimate()"
+					(click)="selectEstimate(option)"
+				>
+					{{ option }}
+				</button>
+			</li>
+			}
+		</ul>
+	</div>
+	} @else {
+	<div id="observer-mode-card">
+		<p id="observer-mode-text">
+			Você está no modo de observador. Caso queira estimar também, clique no
+			botão abaixo:
+		</p>
+		<button
+			type="button"
+			(click)="toggleUserMode()"
+			id="toggle-user-mode-button"
+			class="button"
+		>
+			Mudar para modo participante
+		</button>
+	</div>
+	}
+</main>
+<ng-container #toast></ng-container>
+<ng-container #modal></ng-container>
+<ng-container #loading><ng-container></ng-container></ng-container>

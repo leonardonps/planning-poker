@@ -1,4 +1,3 @@
-@use 'cores' as *;
 @use "breakpoints" as *;
 
 :host {
@@ -20,7 +19,7 @@ h1 {
     text-align: center;
 }
 
-#nova-sessao {
+#new-session {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -35,13 +34,13 @@ h1 {
         margin-bottom: 0;
     }
 
-    #nova-sessao {
+    #new-session {
         width: 350px;
     }
 }
 
 @include desktop-up {
-    #nova-sessao {
+    #new-session {
         width: 400px;
     }
 }

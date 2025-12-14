@@ -1,4 +1,4 @@
-@use 'cores' as *;
+@use 'colors' as *;
 
 .toast-container {
     display: flex;
@@ -11,7 +11,7 @@
     bottom: 3vh;
     right: 3vh;
 
-    background-color: $cor-secundaria;
+    background-color: $color-secondary;
     
     padding: 10px;
     border-radius: 5px;
@@ -20,9 +20,9 @@
     z-index: 1000;
 }
 
-.toast-conteudo {
-    background-color: $cor-secundaria;
-    color: $cor-primaria;
+.toast-content {
+    background-color: $color-secondary;
+    color: $color-primary;
 
     font-size: 1rem;
 }

@@ -1,4 +1,13 @@
 {
-    "useTab": true,
-    "tabWidth": 4
+	"singleQuote": true,
+	"useTabs": true,
+	"semi": true,
+	"overrides": [
+		{
+			"files": "*.html",
+			"options": {
+				"parser": "html"
+			}
+		}
+	]
 }

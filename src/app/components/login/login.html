@@ -1,11 +1,10 @@
 <h1>Planning Poker</h1>
 <button
-  type="button"
-  id="nova-sessao"
-  class="botao-primario"
-  (click)="criarNovaSessao()"
-  [class.botao-primario-desabilitado]="this.desabilitado"
-  [disabled]="this.desabilitado"
+	type="button"
+	id="new-session"
+	class="button"
+	(click)="createNewSession()"
+	[disabled]="this.disabled()"
 >
-  Começar uma nova sessão
+	Começar uma nova sessão
 </button>

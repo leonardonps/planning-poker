@@ -1,47 +1,43 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { gerarId } from '../../../utils/funcoes/geracaoId/gerarId';
-import { opcoesIniciaisEstimativa } from '../../constants/opcoesIniciaisEstimativa';
-import { ISessao } from '../../interfaces/shared/sessao/sessao';
-import { SupabaseService } from '../../services/shared/supabase/supabase.service';
-import { SessaoService } from '../../services/sessao/sessao.service';
+import { SessionService } from '../../services/session/session.service';
+import { generateId } from '../../utils/string/id';
+import { initialEstimateOptions } from '../../constants/initial-estimate-options';
+import { SupabaseService } from '../../services/shared/supabase.service';
+import { SessionCreate } from '../../interfaces/session';
 
 @Component({
-  selector: 'app-login',
-  imports: [],
-  templateUrl: './login.html',
-  styleUrl: './login.scss',
+	selector: 'app-login',
+	imports: [],
+	templateUrl: './login.html',
+	styleUrl: './login.scss',
 })
 export class Login {
-  private router = inject(Router);
-  private supabaseService = inject(SupabaseService);
-  private sessaoService = inject(SessaoService);
+	private router = inject(Router);
+	private supabaseService = inject(SupabaseService);
+	private sessionService = inject(SessionService);
 
-  desabilitado = false;
+	protected disabled = signal(false);
 
-  async criarNovaSessao() {
-    this.desabilitado = true;
+	async createNewSession() {
+		this.disabled.set(true);
 
-    try {
-      const novaSessao: ISessao = {
-        id: gerarId(6),
-        opcoesEstimativa: opcoesIniciaisEstimativa,
-        mediaEstimativasSessao: null,
-        dataCriacao: null,
-      };
+		try {
+			const newSession: SessionCreate = {
+				id: generateId(6),
+				estimateOptions: initialEstimateOptions,
+				averageEstimate: null,
+			};
 
-      const sessaoCriada = await this.supabaseService.inserirSessao(novaSessao);
+			const createdSession =
+				await this.supabaseService.insertSession(newSession);
 
-      if (!sessaoCriada) {
-        throw new Error('Falha ao criar sessão');
-      }
-
-      this.sessaoService.sessao.set(sessaoCriada);
-      this.router.navigate(['sessao', sessaoCriada.id]);
-    } catch (error) {
-      alert(error);
-    } finally {
-      this.desabilitado = false;
-    }
-  }
+			this.sessionService.session.set(createdSession);
+			this.router.navigate(['session', createdSession.id]);
+		} catch (error) {
+			alert(error);
+		} finally {
+			this.disabled.set(false);
+		}
+	}
 }

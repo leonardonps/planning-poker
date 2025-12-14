@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { Login } from './components/login/login';
-import { Sessao } from './components/sessao/sessao';
+import { Session } from './components/session/session';
 
 export const routes: Routes = [
     {
@@ -8,8 +8,8 @@ export const routes: Routes = [
         component: Login
     },
     {
-        path: 'sessao/:id',
-        component: Sessao
+        path: 'session/:id',
+        component: Session
     },
     {
         path: '**',

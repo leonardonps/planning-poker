@@ -1,0 +1,11 @@
+<div id="modal-container">
+	<header>
+		<h2>{{this.title()}}</h2>
+	</header>
+	<div id="modal-body">
+		<ng-content select="[modal-body]"></ng-content>
+	</div>
+	<div id="modal-footer">
+		<ng-content select="[modal-actions]"></ng-content>
+	</div>
+</div>

@@ -1,0 +1,43 @@
+<app-base-modal [title]="this.title">
+	<form id="user-form" [formGroup]="userForm" (ngSubmit)="save()" modal-body>
+		<div id="user-fields">
+			<div class="field" id="user-name-field">
+				<label for="user-name">Nome</label>
+				<input
+					#userName
+					type="text"
+					id="user-name"
+					minlength="3"
+					maxlength="15"
+					placeholder="Nome"
+					formControlName="name"
+				/>
+				@if (userForm.invalid && this.submitted) { @if
+				(userForm.controls["name"].hasError("minlength")) {
+				<small>Nome deve possuir, pelo menos, três caracteres</small>
+				} @else if (userForm.controls["name"].hasError("maxlength")) {
+				<small>Nome deve possuir até quinze caracteres</small>
+				} @else if (userForm.controls["name"].hasError("required")) {
+				<small>Campo obrigatório</small>
+				} }
+			</div>
+			<div class="field" id="observer-field">
+				<label for="observer">Deseja apenas observar?</label>
+				<label class="switch">
+					<input type="checkbox" id="observer" formControlName="isObserver" />
+					<span class="slider round"></span>
+				</label>
+			</div>
+		</div>
+	</form>
+	<button
+		type="submit"
+		id="save-button"
+		form="user-form"
+		class="button"
+		[disabled]="this.disabled"
+		modal-actions
+	>
+		Salvar
+	</button>
+</app-base-modal>

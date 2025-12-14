@@ -1,10 +1,10 @@
-@use 'cores' as *;
+@use 'colors' as *;
 
 .spinner {
     width: 50px;
     height: 50px;
-    border: 5px solid $cor-terciaria;
-    border-top-color: $cor-secundaria;
+    border: 5px solid $color-tertiary;
+    border-top-color: $color-secondary;
     border-radius: 50%;
     animation: spin 1s linear infinite; 
 }

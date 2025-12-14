@@ -1,0 +1,73 @@
+<app-base-modal [title]="this.title">
+	<div id="table-scroll" modal-body>
+		<table #sessionResultsTable id="session-results-table">
+			<thead>
+				<tr>
+					<th>Descrição</th>
+					<th>Estimativa da equipe</th>
+					<th>Quem gerou?</th>
+					<th>Data/hora</th>
+					<th>Ação</th>
+				</tr>
+			</thead>
+			<tbody>
+				@if (this.sessionService.sessionResults().length > 0) { @for(result of
+				this.sessionService.sessionResults(); track $index) {
+				<tr>
+					<td>
+						<input
+							[id]="`description-${$index}`"
+							type="text"
+							title="Descrição da estimativa"
+							placeholder="Descrição da estimativa"
+							[value]="result.description"
+							(blur)="onUpdateDescription(result.id, $event.target.value)"
+							(keyup.enter)="$event.target.blur()"
+							[disabled]="isUpdating()[result.id]"
+							class="description-input"
+						/>
+					</td>
+					<td class="col-align-center">{{result.averageEstimate}}</td>
+					<td class="col-align-center">{{result.generatedBy}}</td>
+					<td class="col-align-center">
+						{{result.createdAt | date: 'dd/MM/yyyy HH:mm'}}
+					</td>
+					<td class="col-align-center">
+						<button
+							class="button delete-session-result-button"
+							type="button"
+							(click)="onDeleteSessionResult(result.id)"
+							[disabled]="this.isDeleting()[result.id]"
+						>
+							<span class="material-symbols-outlined"> delete </span>
+						</button>
+					</td>
+				</tr>
+				} } @else {
+				<td colspan="5" style="text-align: center">
+					Nenhuma estimativa foi registrada para essa sessão
+				</td>
+				}
+			</tbody>
+		</table>
+	</div>
+	<button
+		type="button"
+		class="button"
+		id="export-button"
+		modal-actions
+		(click)="onExportSessionResults()"
+		[disabled]="this.sessionService.sessionResults().length < 1"
+	>
+		Exportar
+	</button>
+	<button
+		type="button"
+		id="close-button"
+		class="button"
+		modal-actions
+		(click)="onCloseSessionResults()"
+	>
+		Fechar
+	</button>
+</app-base-modal>

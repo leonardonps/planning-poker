@@ -1,0 +1,24 @@
+@use 'colors' as *;
+
+.button {
+    border: 1px solid $color-secondary;
+    background-color: $color-primary;
+    
+    border-radius: 10px;
+
+    padding: 1%;
+
+    &:hover {
+        background-color: $color-secondary;
+        color: $color-primary;
+        
+        cursor: pointer;
+    }
+
+    &:disabled {
+        cursor: not-allowed;
+        background-color: $color-primary;
+        border-color: $color-tertiary;
+        color: $color-tertiary;
+    }
+}

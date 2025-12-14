@@ -85,6 +85,8 @@ export class UserModal implements OnInit, AfterViewInit {
 
 			await this.sessionService.trackPresence(createdUser);
 
+			this.sessionService.updatePresentUsers();
+
 			sessionStorage.setItem('userId', createdUser.id);
 			this.userModalService.close();
 		} catch (error) {

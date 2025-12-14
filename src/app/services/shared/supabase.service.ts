@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { environment } from '../../../enviroments/enviroment';
 import { Session, SessionCreate } from '../../interfaces/session';
 import { PostgrestBaseError } from '../../errors/PostgrestBaseError';
 import { SessionNotFoundError } from '../../errors/SessionNotFoundError';
@@ -9,6 +8,7 @@ import {
 	SessionResult,
 	SessionResultCreate,
 } from '../../interfaces/session-results';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
 	providedIn: 'root',

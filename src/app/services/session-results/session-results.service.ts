@@ -1,18 +1,12 @@
 import { inject, Injectable, signal, WritableSignal } from '@angular/core';
-import { SessionResultsModal } from '../../../components/session/modals/session-results-modal/session-results-modal';
-import { BaseModal } from './contracts/base-modal.abstract';
-import { SessionResult } from '../../../interfaces/session-results';
-import { SessionService } from '../session.service';
-import { SupabaseService } from '../../shared/supabase.service';
+import { SessionService } from '../session/session.service';
+import { SupabaseService } from '../shared/supabase.service';
+import { SessionResult } from '../../interfaces/session-results';
 
 @Injectable({ providedIn: 'root' })
-export class SessionResultsModalService extends BaseModal<SessionResultsModal> {
+export class SessionResultsService {
 	private sessionService = inject(SessionService);
 	private supabaseService = inject(SupabaseService);
-
-	protected get component() {
-		return SessionResultsModal;
-	}
 
 	sessionResults: WritableSignal<SessionResult[]> = signal([]);
 

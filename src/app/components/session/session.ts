@@ -14,12 +14,13 @@ import { ActivatedRoute } from '@angular/router';
 
 import { ToastService } from '../../services/shared/toast.service';
 
-import { UserModalService } from '../../services/session/modals/user-modal.service';
+import { UserModalService } from '../../services/modals/user-modal.service';
 import { SessionService } from '../../services/session/session.service';
-import { SessionResultsModalService } from '../../services/session/modals/session-results-modal.service';
-import { EstimateOptionsModalService } from '../../services/session/modals/estimate-options-modal.service';
+import { SessionResultsModalService } from '../../services/modals/session-results-modal.service';
+import { EstimateOptionsModalService } from '../../services/modals/estimate-options-modal.service';
 import { User } from '../../interfaces/user';
 import { UserService } from '../../services/user/user.service';
+import { SessionResultsService } from '../../services/session-results/session-results.service';
 
 @Component({
 	selector: 'app-session',
@@ -43,6 +44,7 @@ export class Session implements AfterViewInit, OnInit, OnDestroy {
 
 	protected sessionService = inject(SessionService);
 	protected userService = inject(UserService);
+	protected sessionResultsService = inject(SessionResultsService);
 
 	private sessionLink = window.location.href;
 
@@ -131,7 +133,7 @@ export class Session implements AfterViewInit, OnInit, OnDestroy {
 	}
 
 	async onOpenSessionResultsModal() {
-		await this.sessionResultsModalService.getSessionResults();
+		await this.sessionResultsService.getSessionResults();
 		this.sessionResultsModalService.open();
 	}
 }

@@ -6,7 +6,7 @@
     
     position: fixed;
 
-    height: 30px;
+    height: clamp(2rem, 5vh, 6rem);
 
     bottom: 3vh;
     right: 3vh;

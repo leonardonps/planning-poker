@@ -8,10 +8,11 @@ import {
 	ViewChild,
 } from '@angular/core';
 import { BaseModal } from '../../../shared/base-modal/base-modal';
-import { SessionResultsModalService } from '../../../../services/session/modals/session-results-modal.service';
+import { SessionResultsModalService } from '../../../../services/modals/session-results-modal.service';
 import { DatePipe } from '@angular/common';
 import { ExcelService } from '../../../../services/shared/excel.service';
 import { SessionResult } from '../../../../interfaces/session-results';
+import { SessionResultsService } from '../../../../services/session-results/session-results.service';
 
 @Component({
 	selector: 'app-session-results-modal',
@@ -23,12 +24,13 @@ export class SessionResultsModal {
 	@ViewChild('sessionResultsTable') sessionResultsTable!: ElementRef;
 
 	private sessionResultsModalService = inject(SessionResultsModalService);
+	private sessionResultsService = inject(SessionResultsService);
 	private excelService = inject(ExcelService);
 
 	protected title = 'Histórico da sessão';
 
 	protected sessionResults: Signal<SessionResult[]> = computed(() =>
-		this.sessionResultsModalService.sessionResults(),
+		this.sessionResultsService.sessionResults(),
 	);
 
 	protected isDeleting = signal<Record<string, boolean>>({});
@@ -41,8 +43,8 @@ export class SessionResultsModal {
 	onExportSessionResults() {
 		this.excelService.exportTable(
 			this.sessionResultsTable.nativeElement,
-			'teste',
-			'teste',
+			'resultados',
+			'resultados',
 		);
 	}
 
@@ -50,7 +52,7 @@ export class SessionResultsModal {
 		this.isDeleting.update((map) => ({ ...map, [id]: true }));
 
 		try {
-			await this.sessionResultsModalService.deleteSessionResult(id);
+			await this.sessionResultsService.deleteSessionResult(id);
 		} catch (error) {
 			alert(error);
 		} finally {
@@ -59,7 +61,7 @@ export class SessionResultsModal {
 	}
 
 	async onUpdateDescription(sessionResultId: string, newDescription: string) {
-		const currentSessionResult = this.sessionResultsModalService
+		const currentSessionResult = this.sessionResultsService
 			.sessionResults()
 			.find((sessionResult) => sessionResult.id === sessionResultId);
 
@@ -74,7 +76,7 @@ export class SessionResultsModal {
 		this.isUpdating.update((map) => ({ ...map, [sessionResultId]: true }));
 
 		try {
-			await this.sessionResultsModalService.updateSessionResultDescription(
+			await this.sessionResultsService.updateSessionResultDescription(
 				sessionResultId,
 				newDescription,
 			);

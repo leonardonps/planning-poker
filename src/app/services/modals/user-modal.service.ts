@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { UserModal } from '../../../components/session/modals/user-modal/user-modal';
+import { UserModal } from '../../components/session/modals/user-modal/user-modal';
 import { BaseModal } from './contracts/base-modal.abstract';
 
 @Injectable({ providedIn: 'root' })

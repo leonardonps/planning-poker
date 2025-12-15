@@ -8,7 +8,7 @@ import {
 } from '@angular/forms';
 import { estimateOptionsValidator } from '../../../../validators/estimateOptions';
 import { SessionService } from '../../../../services/session/session.service';
-import { EstimateOptionsModalService } from '../../../../services/session/modals/estimate-options-modal.service';
+import { EstimateOptionsModalService } from '../../../../services/modals/estimate-options-modal.service';
 import { SupabaseService } from '../../../../services/shared/supabase.service';
 
 @Component({

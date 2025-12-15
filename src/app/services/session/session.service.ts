@@ -9,7 +9,7 @@ import {
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { ToastService } from '../shared/toast.service';
 import { Router } from '@angular/router';
-import { UserModalService } from './modals/user-modal.service';
+import { UserModalService } from '../modals/user-modal.service';
 import { User } from '../../interfaces/user';
 import { SessionNotFoundError } from '../../errors/SessionNotFoundError';
 import { ChannelNotFoundError } from '../../errors/ChannelNotFoundError';
@@ -222,9 +222,8 @@ export class SessionService {
 					},
 				)
 				.subscribe(async (status) => {
-					console.log(`Status atual do canal: ${status}`);
 					console.log(
-						`Usuários do canal: ${this.getSessionChannel().presenceState()}`,
+						`Supabase channel status: ${status} | ${new Date().toISOString()}`,
 					);
 					switch (status) {
 						case 'SUBSCRIBED':
@@ -245,7 +244,7 @@ export class SessionService {
 						case 'CLOSED':
 							this.toastService.show({
 								text: `Conexão perdida: ${status}`,
-								duration: 5000,
+								duration: 15000,
 							});
 							reject();
 							break;

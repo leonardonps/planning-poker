@@ -125,7 +125,7 @@
 					[class.selected-estimate-option]="
                 option === this.selectedOption()
               "
-					[class.estimate-option-highlight]="option !== this.selectedOption()"
+					[class.estimate-option-highlight]="option !== this.selectedOption() && !this.avegareEstimate()"
 					[disabled]="this.avegareEstimate()"
 					(click)="selectEstimate(option)"
 				>

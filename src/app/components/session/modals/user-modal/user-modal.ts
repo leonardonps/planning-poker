@@ -13,7 +13,7 @@ import {
 	ReactiveFormsModule,
 	Validators,
 } from '@angular/forms';
-import { UserModalService } from '../../../../services/session/modals/user-modal.service';
+import { UserModalService } from '../../../../services/modals/user-modal.service';
 import { SessionService } from '../../../../services/session/session.service';
 import { generateId } from '../../../../utils/string/id';
 import { SupabaseService } from '../../../../services/shared/supabase.service';

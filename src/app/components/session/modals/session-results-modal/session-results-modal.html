@@ -11,8 +11,8 @@
 				</tr>
 			</thead>
 			<tbody>
-				@if (this.sessionService.sessionResults().length > 0) { @for(result of
-				this.sessionService.sessionResults(); track $index) {
+				@if (this.sessionResults().length > 0) { @for(result of
+				this.sessionResults(); track $index) {
 				<tr>
 					<td>
 						<input
@@ -57,7 +57,7 @@
 		id="export-button"
 		modal-actions
 		(click)="onExportSessionResults()"
-		[disabled]="this.sessionService.sessionResults().length < 1"
+		[disabled]="this.sessionResults().length < 1"
 	>
 		Exportar
 	</button>

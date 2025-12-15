@@ -1,33 +1,57 @@
-import { ComponentRef, Injectable, ViewContainerRef } from '@angular/core';
+import { inject, Injectable, signal, WritableSignal } from '@angular/core';
 import { SessionResultsModal } from '../../../components/session/modals/session-results-modal/session-results-modal';
+import { BaseModal } from './contracts/base-modal.abstract';
+import { SessionResult } from '../../../interfaces/session-results';
+import { SessionService } from '../session.service';
+import { SupabaseService } from '../../shared/supabase.service';
 
 @Injectable({ providedIn: 'root' })
-export class SessionResultsModalService {
-	private hostRef: ViewContainerRef | undefined;
-	private sessionResultsModal: ComponentRef<SessionResultsModal> | undefined;
-	private isOpen = false;
+export class SessionResultsModalService extends BaseModal<SessionResultsModal> {
+	private sessionService = inject(SessionService);
+	private supabaseService = inject(SupabaseService);
 
-	setHost(hostRef: ViewContainerRef) {
-		this.hostRef = hostRef;
+	protected get component() {
+		return SessionResultsModal;
 	}
 
-	open() {
-		if (!this.hostRef || this.isOpen) {
-			return;
-		}
+	sessionResults: WritableSignal<SessionResult[]> = signal([]);
 
-		this.sessionResultsModal =
-			this.hostRef.createComponent(SessionResultsModal);
-		this.isOpen = true;
+	async getSessionResults() {
+		try {
+			const session = this.sessionService.getSession();
+
+			const sessionResults = await this.supabaseService.getSessionResults(
+				session.id,
+			);
+
+			this.sessionResults.set(sessionResults);
+		} catch (error) {
+			alert(error);
+		}
 	}
 
-	close() {
-		if (!this.sessionResultsModal) {
-			return;
-		}
+	async deleteSessionResult(id: string) {
+		await this.supabaseService.deleteSessionResult(id);
 
-		this.sessionResultsModal.destroy();
-		this.sessionResultsModal = undefined;
-		this.isOpen = false;
+		this.sessionResults.update((sessionResults) =>
+			sessionResults.filter((sessionResult) => sessionResult.id !== id),
+		);
+	}
+
+	async updateSessionResultDescription(
+		sessionResultId: string,
+		description: string,
+	) {
+		await this.supabaseService.updateSessionResult(sessionResultId, {
+			description,
+		});
+
+		this.sessionResults.update((sessionResults) =>
+			sessionResults.map((sessionResult) =>
+				sessionResult.id === sessionResultId
+					? { ...sessionResult, description: description }
+					: sessionResult,
+			),
+		);
 	}
 }

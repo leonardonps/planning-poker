@@ -14,11 +14,11 @@ import {
 	Validators,
 } from '@angular/forms';
 import { UserModalService } from '../../../../services/session/modals/user-modal.service';
-import { SessionNotFoundError } from '../../../../errors/SessionNotFoundError';
 import { SessionService } from '../../../../services/session/session.service';
 import { generateId } from '../../../../utils/string/id';
 import { SupabaseService } from '../../../../services/shared/supabase.service';
 import { UserCreate } from '../../../../interfaces/user';
+import { UserService } from '../../../../services/user/user.service';
 
 @Component({
 	selector: 'app-user-modal',
@@ -31,6 +31,8 @@ export class UserModal implements OnInit, AfterViewInit {
 
 	private supabaseService = inject(SupabaseService);
 	private sessionService = inject(SessionService);
+	private userService = inject(UserService);
+
 	private userModalService = inject(UserModalService);
 
 	title = 'Novo participante';
@@ -65,27 +67,21 @@ export class UserModal implements OnInit, AfterViewInit {
 		this.disabled = true;
 
 		try {
-			const sessionId = this.sessionService.session()?.id;
-
-			if (!sessionId) {
-				throw new SessionNotFoundError(sessionId);
-			}
+			const session = this.sessionService.getSession();
 
 			const newUser: UserCreate = {
 				id: generateId(8),
 				name: this.userForm.controls['name'].value,
 				isObserver: this.userForm.controls['isObserver'].value,
 				estimate: null,
-				sessionId: sessionId,
+				sessionId: session.id,
 			};
 
 			const createdUser = await this.supabaseService.insertUser(newUser);
 
-			this.sessionService.user.set(createdUser);
+			this.userService.user.set(createdUser);
 
 			await this.sessionService.trackPresence(createdUser);
-
-			this.sessionService.updatePresentUsers();
 
 			sessionStorage.setItem('userId', createdUser.id);
 			this.userModalService.close();

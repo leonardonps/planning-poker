@@ -1,15 +1,17 @@
 import {
 	Component,
+	computed,
 	ElementRef,
 	inject,
+	Signal,
 	signal,
 	ViewChild,
 } from '@angular/core';
 import { BaseModal } from '../../../shared/base-modal/base-modal';
 import { SessionResultsModalService } from '../../../../services/session/modals/session-results-modal.service';
-import { SessionService } from '../../../../services/session/session.service';
 import { DatePipe } from '@angular/common';
 import { ExcelService } from '../../../../services/shared/excel.service';
+import { SessionResult } from '../../../../interfaces/session-results';
 
 @Component({
 	selector: 'app-session-results-modal',
@@ -23,8 +25,11 @@ export class SessionResultsModal {
 	private sessionResultsModalService = inject(SessionResultsModalService);
 	private excelService = inject(ExcelService);
 
-	protected sessionService = inject(SessionService);
 	protected title = 'Histórico da sessão';
+
+	protected sessionResults: Signal<SessionResult[]> = computed(() =>
+		this.sessionResultsModalService.sessionResults(),
+	);
 
 	protected isDeleting = signal<Record<string, boolean>>({});
 	protected isUpdating = signal<Record<string, boolean>>({});
@@ -45,7 +50,7 @@ export class SessionResultsModal {
 		this.isDeleting.update((map) => ({ ...map, [id]: true }));
 
 		try {
-			await this.sessionService.deleteSessionResult(id);
+			await this.sessionResultsModalService.deleteSessionResult(id);
 		} catch (error) {
 			alert(error);
 		} finally {
@@ -54,7 +59,7 @@ export class SessionResultsModal {
 	}
 
 	async onUpdateDescription(sessionResultId: string, newDescription: string) {
-		const currentSessionResult = this.sessionService
+		const currentSessionResult = this.sessionResultsModalService
 			.sessionResults()
 			.find((sessionResult) => sessionResult.id === sessionResultId);
 
@@ -69,7 +74,7 @@ export class SessionResultsModal {
 		this.isUpdating.update((map) => ({ ...map, [sessionResultId]: true }));
 
 		try {
-			await this.sessionService.updateSessionResultDescription(
+			await this.sessionResultsModalService.updateSessionResultDescription(
 				sessionResultId,
 				newDescription,
 			);

@@ -14,12 +14,11 @@ import { User } from '../../interfaces/user';
 import { SessionNotFoundError } from '../../errors/SessionNotFoundError';
 import { ChannelNotFoundError } from '../../errors/ChannelNotFoundError';
 import { SessionPresence } from '../../interfaces/session-presence';
-import { UserNotFoundError } from '../../errors/UserNotFoundError';
 import { truncate } from '../../utils/number/truncate';
 import { Session } from '../../interfaces/session';
-import { SessionResult } from '../../interfaces/session-results';
 import { SupabaseService } from '../shared/supabase.service';
 import { LoadingSpinnerService } from '../shared/loading-spinner.service';
+import { UserService } from '../user/user.service';
 
 @Injectable({ providedIn: 'root' })
 export class SessionService {
@@ -31,6 +30,8 @@ export class SessionService {
 	private toastService = inject(ToastService);
 	private userModalService = inject(UserModalService);
 
+	private userService = inject(UserService);
+
 	private sessionChannel: RealtimeChannel | null = null;
 
 	session: WritableSignal<Session | undefined> = signal(undefined);
@@ -39,18 +40,6 @@ export class SessionService {
 		this.users().filter((user) => this.presentUserIds().includes(user.id)),
 	);
 	presentUserIds: WritableSignal<string[]> = signal([]);
-	user: WritableSignal<User | undefined> = signal(undefined);
-	sessionResults: WritableSignal<SessionResult[]> = signal([]);
-
-	getUser(): User {
-		const user = this.user();
-
-		if (!user) {
-			throw new UserNotFoundError();
-		}
-
-		return user;
-	}
 
 	getSession(): Session {
 		const session = this.session();
@@ -128,11 +117,15 @@ export class SessionService {
 
 			await this.setUsers(sessionId);
 
-			this.user.set(this.users().find((user) => user.id === userId));
+			this.userService.user.set(
+				this.users().find((user) => user.id === userId),
+			);
 
 			await this.createSessionChannel(sessionId);
 
-			this.userModalService.open();
+			if (!this.userService.user()) {
+				this.userModalService.open();
+			}
 		} catch (error) {
 			alert(error);
 			this.router.navigate(['/']);
@@ -217,7 +210,7 @@ export class SessionService {
 						const estimateOptions: string = payload.new['estimate_options'];
 
 						if (averageEstimate === null) {
-							this.user.update((user) =>
+							this.userService.user.update((user) =>
 								user ? { ...user, estimate: null } : user,
 							);
 						}
@@ -237,7 +230,7 @@ export class SessionService {
 					switch (status) {
 						case 'SUBSCRIBED':
 							try {
-								const user = this.user();
+								const user = this.userService.user();
 
 								// If the user is already created, it tracks them
 								if (user) {
@@ -289,20 +282,6 @@ export class SessionService {
 		}
 	}
 
-	async updateUserEstimate(option: number) {
-		try {
-			const user = this.getUser();
-
-			const estimate = option === user.estimate ? null : option;
-
-			this.user.update((user) => (user ? { ...user, estimate } : user));
-
-			await this.supabaseService.updateUser(user.id, { estimate });
-		} catch (error) {
-			alert(error);
-		}
-	}
-
 	async updateSessionAverageEstimate(estimates: number[]) {
 		try {
 			const session = this.getSession();
@@ -315,7 +294,7 @@ export class SessionService {
 			await this.supabaseService.updateSession(session.id, { averageEstimate });
 
 			await this.supabaseService.insertSessionResults({
-				generatedBy: this.getUser().name,
+				generatedBy: this.userService.getUser().name,
 				averageEstimate: averageEstimate,
 				sessionId: session.id,
 				description: 'Sem descrição',
@@ -348,59 +327,5 @@ export class SessionService {
 				text: `Falha ao copiar link para a área de transferência: ${error}`,
 			});
 		}
-	}
-
-	async toggleUserMode(): Promise<void> {
-		try {
-			const user = this.getUser();
-
-			const isObserver = !user.isObserver;
-			const estimate = null;
-
-			this.user.update((user) =>
-				user ? { ...user, isObserver, estimate } : user,
-			);
-
-			await this.supabaseService.updateUser(user.id, { estimate, isObserver });
-		} catch (error) {
-			alert(error);
-		}
-	}
-
-	async getSessionResults() {
-		try {
-			const session = this.getSession();
-
-			const sessionResults = await this.supabaseService.getSessionResults(
-				session.id,
-			);
-
-			this.sessionResults.set(sessionResults);
-		} catch (error) {
-			alert(error);
-		}
-	}
-
-	async deleteSessionResult(id: string) {
-		await this.supabaseService.deleteSessionResult(id);
-		this.sessionResults.update((sessionResults) =>
-			sessionResults.filter((sessionResult) => sessionResult.id !== id),
-		);
-	}
-
-	async updateSessionResultDescription(
-		sessionResultId: string,
-		description: string,
-	) {
-		await this.supabaseService.updateSessionResult(sessionResultId, {
-			description,
-		});
-		this.sessionResults.update((sessionResults) =>
-			sessionResults.map((sessionResult) =>
-				sessionResult.id === sessionResultId
-					? { ...sessionResult, description: description }
-					: sessionResult,
-			),
-		);
 	}
 }

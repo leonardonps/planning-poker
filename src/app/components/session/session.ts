@@ -19,6 +19,7 @@ import { SessionService } from '../../services/session/session.service';
 import { SessionResultsModalService } from '../../services/session/modals/session-results-modal.service';
 import { EstimateOptionsModalService } from '../../services/session/modals/estimate-options-modal.service';
 import { User } from '../../interfaces/user';
+import { UserService } from '../../services/user/user.service';
 
 @Component({
 	selector: 'app-session',
@@ -37,9 +38,11 @@ export class Session implements AfterViewInit, OnInit, OnDestroy {
 	private userModalService = inject(UserModalService);
 	private estimateOptionsModalService = inject(EstimateOptionsModalService);
 	private sessionResultsModalService = inject(SessionResultsModalService);
+
 	private toastService = inject(ToastService);
 
 	protected sessionService = inject(SessionService);
+	protected userService = inject(UserService);
 
 	private sessionLink = window.location.href;
 
@@ -64,11 +67,11 @@ export class Session implements AfterViewInit, OnInit, OnDestroy {
 	);
 
 	protected selectedOption: Signal<number | null | undefined> = computed(
-		() => this.sessionService.user()?.estimate,
+		() => this.userService.user()?.estimate,
 	);
 
 	protected userMode: Signal<boolean | undefined> = computed(
-		() => this.sessionService.user()?.isObserver,
+		() => this.userService.user()?.isObserver,
 	);
 
 	protected settingsMenuOpen = false;
@@ -102,7 +105,7 @@ export class Session implements AfterViewInit, OnInit, OnDestroy {
 	}
 
 	async selectEstimate(option: number) {
-		await this.sessionService.updateUserEstimate(option);
+		await this.userService.updateUserEstimate(option);
 	}
 
 	async updateSessionAverageEstimate() {
@@ -120,7 +123,7 @@ export class Session implements AfterViewInit, OnInit, OnDestroy {
 	}
 
 	async toggleUserMode() {
-		await this.sessionService.toggleUserMode();
+		await this.userService.toggleUserMode();
 	}
 
 	onToggleSettingsMenu() {
@@ -128,7 +131,7 @@ export class Session implements AfterViewInit, OnInit, OnDestroy {
 	}
 
 	async onOpenSessionResultsModal() {
-		await this.sessionService.getSessionResults();
+		await this.sessionResultsModalService.getSessionResults();
 		this.sessionResultsModalService.open();
 	}
 }

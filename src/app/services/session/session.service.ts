@@ -35,10 +35,13 @@ export class SessionService {
 	private sessionChannel: RealtimeChannel | null = null;
 
 	session: WritableSignal<Session | undefined> = signal(undefined);
+
 	users: WritableSignal<User[]> = signal([]);
+
 	presentUsers: Signal<User[]> = computed(() =>
 		this.users().filter((user) => this.presentUserIds().includes(user.id)),
 	);
+
 	presentUserIds: WritableSignal<string[]> = signal([]);
 
 	getSession(): Session {
@@ -105,23 +108,15 @@ export class SessionService {
 			// Set existent session
 			await this.setSession(sessionId);
 
-			// If it's other session, it removes the userId to show again user modal
-			if (
-				this.session() &&
-				this.session()?.id !== sessionStorage.getItem('sessionId')
-			) {
-				sessionStorage.removeItem('userId');
-			}
+			// Set session users
+			await this.setUsers();
 
-			sessionStorage.setItem('sessionId', sessionId);
-
-			await this.setUsers(sessionId);
-
+			// Set current user
 			this.userService.user.set(
 				this.users().find((user) => user.id === userId),
 			);
 
-			await this.createSessionChannel(sessionId);
+			await this.createSessionChannel();
 
 			if (!this.userService.user()) {
 				this.userModalService.open();
@@ -129,16 +124,16 @@ export class SessionService {
 		} catch (error) {
 			alert(error);
 			this.router.navigate(['/']);
-			sessionStorage.removeItem('userId');
 		} finally {
 			this.loadingSpinnerService.hide();
 		}
 	}
 
-	async createSessionChannel(sessionId: string): Promise<void> {
+	async createSessionChannel(): Promise<void> {
 		return new Promise((resolve, reject) => {
+			const session = this.getSession();
 			this.sessionChannel = this.supabaseService.supabase.channel(
-				`session:${sessionId}`,
+				`session:${session.id}`,
 			);
 
 			this.sessionChannel
@@ -157,7 +152,7 @@ export class SessionService {
 						event: 'INSERT',
 						schema: 'public',
 						table: 'user',
-						filter: `session_id=eq.${sessionId}`,
+						filter: `session_id=eq.${session.id}`,
 					},
 					(payload) => {
 						const createdUser: User = {
@@ -179,7 +174,7 @@ export class SessionService {
 						event: 'UPDATE',
 						schema: 'public',
 						table: 'user',
-						filter: `session_id=eq.${sessionId}`,
+						filter: `session_id=eq.${session.id}`,
 					},
 					(payload) => {
 						this.users.update((users) =>
@@ -201,7 +196,7 @@ export class SessionService {
 						event: 'UPDATE',
 						schema: 'public',
 						table: 'session',
-						filter: `id=eq.${sessionId}`,
+						filter: `id=eq.${session.id}`,
 					},
 					(payload) => {
 						const averageEstimate: number | null =
@@ -227,6 +222,10 @@ export class SessionService {
 					},
 				)
 				.subscribe(async (status) => {
+					console.log(`Status atual do canal: ${status}`);
+					console.log(
+						`Usuários do canal: ${this.getSessionChannel().presenceState()}`,
+					);
 					switch (status) {
 						case 'SUBSCRIBED':
 							try {
@@ -261,8 +260,13 @@ export class SessionService {
 		this.session.set(session);
 	}
 
-	async setUsers(sessionId: string): Promise<void> {
-		const users: User[] = await this.supabaseService.getSessionUsers(sessionId);
+	async setUsers(): Promise<void> {
+		const session = this.getSession();
+
+		const users: User[] = await this.supabaseService.getSessionUsers(
+			session.id,
+		);
+
 		this.users.set(users);
 	}
 

@@ -5,11 +5,20 @@ import { Injectable } from '@angular/core';
 	providedIn: 'root',
 })
 export class ExcelService {
-	exportTable(el: HTMLElement, fileName: string, sheetName: string) {
-		const worksheet = XLSX.utils.table_to_sheet(el);
-		const workbook = XLSX.utils.book_new();
+	exportToExcel(data: any[], filename: string, sheetName: string) {
+		const worksheet = XLSX.utils.json_to_sheet(data);
 
-		XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
-		XLSX.writeFile(workbook, `${fileName}.xlsx`);
+		const cols = Object.keys(data[0]).map((key) => ({
+			wch: Math.max(key.length, ...data.map((row) => String(row[key]).length)),
+		}));
+
+		worksheet['!cols'] = cols;
+
+		const workbook = {
+			Sheets: { [sheetName]: worksheet },
+			SheetNames: [sheetName],
+		};
+
+		XLSX.writeFile(workbook, `${filename}.xlsx`);
 	}
 }

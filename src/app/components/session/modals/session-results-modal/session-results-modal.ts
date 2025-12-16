@@ -10,7 +10,6 @@ import {
 import { BaseModal } from '../../../shared/base-modal/base-modal';
 import { SessionResultsModalService } from '../../../../services/modals/session-results-modal.service';
 import { DatePipe } from '@angular/common';
-import { ExcelService } from '../../../../services/shared/excel.service';
 import { SessionResult } from '../../../../interfaces/session-results';
 import { SessionResultsService } from '../../../../services/session-results/session-results.service';
 
@@ -25,7 +24,6 @@ export class SessionResultsModal {
 
 	private sessionResultsModalService = inject(SessionResultsModalService);
 	private sessionResultsService = inject(SessionResultsService);
-	private excelService = inject(ExcelService);
 
 	protected title = 'Histórico da sessão';
 
@@ -41,11 +39,7 @@ export class SessionResultsModal {
 	}
 
 	onExportSessionResults() {
-		this.excelService.exportTable(
-			this.sessionResultsTable.nativeElement,
-			'resultados',
-			'resultados',
-		);
+		this.sessionResultsService.exportToExcel();
 	}
 
 	async onDeleteSessionResult(id: string) {

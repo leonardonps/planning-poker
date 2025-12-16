@@ -90,6 +90,9 @@ export class SessionService {
 				.flat()
 				.map((presence) => presence.userId);
 
+			// When I fix sessionStorage to localStorage
+			// const uniquePresentUserIds = Array.from(new Set(presentUserIds));
+
 			this.presentUserIds.set(presentUserIds);
 		} catch (error) {
 			alert(`Falha ao atualizar usuários presentes: ${error}`);
@@ -140,6 +143,24 @@ export class SessionService {
 				'presence',
 				{
 					event: 'sync',
+				},
+				() => {
+					this.updatePresentUsers();
+				},
+			)
+			.on(
+				'presence',
+				{
+					event: 'join',
+				},
+				() => {
+					this.updatePresentUsers();
+				},
+			)
+			.on(
+				'presence',
+				{
+					event: 'leave',
 				},
 				() => {
 					this.updatePresentUsers();
@@ -239,7 +260,7 @@ export class SessionService {
 						userName: user.name,
 						onlineAt: new Date().toISOString(),
 					});
-					console.log('Track response: ', presenceState);
+					console.log('Track response - Session: ', presenceState);
 				}
 			});
 	}

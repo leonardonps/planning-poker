@@ -81,11 +81,15 @@ export class UserModal implements OnInit, AfterViewInit {
 
 			this.userService.user.set(createdUser);
 
-			await this.sessionService.getSessionChannel().track({
-				userId: createdUser.id,
-				userName: createdUser.name,
-				onlineAt: new Date().toISOString(),
-			});
+			const presenceState = await this.sessionService
+				.getSessionChannel()
+				.track({
+					userId: createdUser.id,
+					userName: createdUser.name,
+					onlineAt: new Date().toISOString(),
+				});
+
+			console.log('Track response - User: ', presenceState);
 
 			sessionStorage.setItem('userId', createdUser.id);
 

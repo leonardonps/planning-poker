@@ -55,8 +55,8 @@ export class SessionResultsService {
 		const filteredSessionResults = this.sessionResults().map(
 			(sessionResult) => ({
 				Descrição: sessionResult.description,
-				'Estimativa média': sessionResult.averageEstimate,
-				'Gerada por': sessionResult.generatedBy,
+				'Estimativa da equipe': sessionResult.averageEstimate,
+				'Quem gerou?': sessionResult.generatedBy,
 				'Data/hora': Intl.DateTimeFormat('pt-BR', {
 					dateStyle: 'short',
 					timeStyle: 'short',

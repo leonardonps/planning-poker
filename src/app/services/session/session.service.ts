@@ -116,7 +116,7 @@ export class SessionService {
 				this.users().find((user) => user.id === userId),
 			);
 
-			await this.createSessionChannel();
+			this.createSessionChannel();
 
 			if (!this.userService.user()) {
 				this.userModalService.open();
@@ -129,128 +129,119 @@ export class SessionService {
 		}
 	}
 
-	async createSessionChannel(): Promise<void> {
-		return new Promise((resolve, reject) => {
-			const session = this.getSession();
-			this.sessionChannel = this.supabaseService.supabase.channel(
-				`session:${session.id}`,
-			);
+	createSessionChannel() {
+		const session = this.getSession();
+		this.sessionChannel = this.supabaseService.supabase.channel(
+			`session:${session.id}`,
+		);
 
-			this.sessionChannel
-				.on(
-					'presence',
-					{
-						event: 'sync',
-					},
-					() => {
-						this.updatePresentUsers();
-					},
-				)
-				.on(
-					'postgres_changes',
-					{
-						event: 'INSERT',
-						schema: 'public',
-						table: 'user',
-						filter: `session_id=eq.${session.id}`,
-					},
-					(payload) => {
-						const createdUser: User = {
-							id: payload.new['id'],
-							name: payload.new['name'],
-							estimate: payload.new['estimate'],
-							isObserver: payload.new['is_observer'],
-							sessionId: payload.new['session_id'],
-							createdAt: payload.new['created_at'],
-							updatedAt: payload.new['updated_at'],
-						};
+		this.sessionChannel
+			.on(
+				'presence',
+				{
+					event: 'sync',
+				},
+				() => {
+					this.updatePresentUsers();
+				},
+			)
+			.on(
+				'postgres_changes',
+				{
+					event: 'INSERT',
+					schema: 'public',
+					table: 'user',
+					filter: `session_id=eq.${session.id}`,
+				},
+				(payload) => {
+					const createdUser: User = {
+						id: payload.new['id'],
+						name: payload.new['name'],
+						estimate: payload.new['estimate'],
+						isObserver: payload.new['is_observer'],
+						sessionId: payload.new['session_id'],
+						createdAt: payload.new['created_at'],
+						updatedAt: payload.new['updated_at'],
+					};
 
-						this.users.update((users) => [...users, createdUser]);
-					},
-				)
-				.on(
-					'postgres_changes',
-					{
-						event: 'UPDATE',
-						schema: 'public',
-						table: 'user',
-						filter: `session_id=eq.${session.id}`,
-					},
-					(payload) => {
-						this.users.update((users) =>
-							users.map((user) =>
-								user.id === payload.new['id']
-									? {
-											...user,
-											estimate: payload.new['estimate'],
-											isObserver: payload.new['is_observer'],
-										}
-									: user,
-							),
-						);
-					},
-				)
-				.on(
-					'postgres_changes',
-					{
-						event: 'UPDATE',
-						schema: 'public',
-						table: 'session',
-						filter: `id=eq.${session.id}`,
-					},
-					(payload) => {
-						const averageEstimate: number | null =
-							payload.new['average_estimate'];
-
-						const estimateOptions: string = payload.new['estimate_options'];
-
-						if (averageEstimate === null) {
-							this.userService.user.update((user) =>
-								user ? { ...user, estimate: null } : user,
-							);
-						}
-
-						this.session.update((session) =>
-							session
+					this.users.update((users) => [...users, createdUser]);
+				},
+			)
+			.on(
+				'postgres_changes',
+				{
+					event: 'UPDATE',
+					schema: 'public',
+					table: 'user',
+					filter: `session_id=eq.${session.id}`,
+				},
+				(payload) => {
+					this.users.update((users) =>
+						users.map((user) =>
+							user.id === payload.new['id']
 								? {
-										...session,
-										estimateOptions,
-										averageEstimate,
+										...user,
+										estimate: payload.new['estimate'],
+										isObserver: payload.new['is_observer'],
 									}
-								: session,
-						);
-					},
-				)
-				.subscribe(async (status) => {
-					console.log(
-						`Supabase channel status: ${status} | ${new Date().toISOString()}`,
+								: user,
+						),
 					);
-					switch (status) {
-						case 'SUBSCRIBED':
-							try {
-								const user = this.userService.user();
+				},
+			)
+			.on(
+				'postgres_changes',
+				{
+					event: 'UPDATE',
+					schema: 'public',
+					table: 'session',
+					filter: `id=eq.${session.id}`,
+				},
+				(payload) => {
+					const averageEstimate: number | null =
+						payload.new['average_estimate'];
 
-								// If the user is already created, it tracks them
-								if (user) {
-									await this.trackPresence(user);
-								}
-								resolve();
-							} catch (error) {
-								alert(error);
-							}
-							break;
-						case 'CHANNEL_ERROR':
-						case 'TIMED_OUT':
-						case 'CLOSED':
-							this.toastService.show({
-								text: `Conexão perdida: ${status}`,
-								duration: 15000,
-							});
-							reject();
-							break;
+					const estimateOptions: string = payload.new['estimate_options'];
+
+					if (averageEstimate === null) {
+						this.userService.user.update((user) =>
+							user ? { ...user, estimate: null } : user,
+						);
 					}
-				});
-		});
+
+					this.session.update((session) =>
+						session
+							? {
+									...session,
+									estimateOptions,
+									averageEstimate,
+								}
+							: session,
+					);
+				},
+			)
+			.subscribe(async (status, err) => {
+				console.log(
+					`Supabase channel status: ${status} | ${new Date().toISOString()}`,
+				);
+
+				if (status !== 'SUBSCRIBED') {
+					console.log('Error: ', err);
+					return;
+				}
+
+				const user = this.userService.user();
+
+				// If the user is already created, it tracks them
+				if (user) {
+					const presenceState = await this.getSessionChannel().track({
+						userId: user.id,
+						userName: user.name,
+						onlineAt: new Date().toISOString(),
+					});
+					console.log('Track response: ', presenceState);
+				}
+			});
 	}
 
 	async setSession(id: string) {
@@ -267,22 +258,6 @@ export class SessionService {
 		);
 
 		this.users.set(users);
-	}
-
-	async trackPresence(user: User) {
-		try {
-			await this.getSessionChannel().track({
-				userId: user.id,
-				userName: user.name,
-				onlineAt: new Date().toISOString(),
-			});
-
-			this.toastService.show({
-				text: 'Conexão estabelecida',
-			});
-		} catch (error) {
-			alert(error);
-		}
 	}
 
 	async updateSessionAverageEstimate(estimates: number[]) {

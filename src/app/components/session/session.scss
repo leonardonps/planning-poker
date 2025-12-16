@@ -118,9 +118,10 @@ main {
   justify-content: flex-start;
   align-items: center;
 
+  
   height: 110px;
   width: 92px;
-
+  
   margin-bottom: 5px;
 }
 
@@ -130,16 +131,16 @@ main {
   align-items: center;
 
   width: 65%;
-  height: 75%;
+  flex: 0 0 72.5%;
 
-  margin-bottom: 5px;
+  margin-bottom: 3px;
 
   border-radius: 5px;
 }
 
 .unselected-estimate {
-  color: $color-tertiary;
-  border: 1px dashed $color-tertiary;
+  color: $color-quinary;
+  border: 1px dashed $color-quinary;
 }
 
 .selected-estimate {
@@ -163,8 +164,8 @@ main {
   justify-content: center;
   align-items: center;
 
-  height: 25%;
   width: 90%;
+  flex: 0 0 27.5%;
 
   word-break: break-word;
 

@@ -83,4 +83,8 @@ export class EstimateOptionsModal implements OnInit {
 			this.disabled.set(false);
 		}
 	}
+
+	onCloseEstimateOptions() {
+		this.estimateOptionsModalService.close();
+	}
 }

@@ -35,12 +35,12 @@ export class UserModal implements OnInit, AfterViewInit {
 
 	private userModalService = inject(UserModalService);
 
-	title = 'Novo participante';
+	protected title = 'Novo participante';
 
-	userForm!: FormGroup;
+	protected userForm!: FormGroup;
 
-	submitted = false;
-	disabled = false;
+	protected submitted = false;
+	protected disabled = false;
 
 	ngOnInit(): void {
 		this.userForm = new FormGroup({

@@ -80,6 +80,7 @@
 			type="button"
 			class="button"
 			id="estimate-button"
+			[disabled]="isUpdatingAverageEstimate"
 			(click)="updateSessionAverageEstimate()"
 		>
 			Estimar
@@ -91,6 +92,7 @@
 			type="button"
 			class="button"
 			id="restart-button"
+			[disabled]="isUpdatingAverageEstimate"
 			(click)="restartSessionAverageEstimate()"
 		>
 			Reiniciar

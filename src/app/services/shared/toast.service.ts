@@ -1,10 +1,6 @@
 import { ComponentRef, Injectable, ViewContainerRef } from '@angular/core';
 import { Toast } from '../../components/shared/toast/toast';
-
-export interface ToastConfig {
-	text: string;
-	duration?: number;
-}
+import { ToastConfig } from '../../interfaces/toast-config';
 
 @Injectable({ providedIn: 'root' })
 export class ToastService {

@@ -15,6 +15,7 @@ import {
 } from '../../interfaces/session-results';
 import { environment } from '../../../environments/environment';
 import { toSnakeCase } from '../../utils/string/camel-case-to-snake-case';
+import { UpdateSessionAverageEstimateResponse } from '../../interfaces/update-session-average-estimate-response';
 
 @Injectable({
 	providedIn: 'root',
@@ -56,6 +57,7 @@ export class SupabaseService {
 			averageEstimate: data.average_estimates,
 			createdAt: data.created_at,
 			updatedAt: data.updated_at,
+			version: data.version,
 		};
 	}
 
@@ -72,6 +74,31 @@ export class SupabaseService {
 				'Falha ao atualizar dados da sessão: ',
 				error,
 			);
+		}
+	}
+
+	async updateSessionAverageEstimate(
+		sessionId: string,
+		averageEstimate: number | null,
+		currentVersion: number,
+	): Promise<void> {
+		const { data, error } = await this.supabase
+			.rpc('update_session_estimate', {
+				p_session_id: sessionId,
+				p_average_estimate: averageEstimate,
+				p_current_version: currentVersion,
+			})
+			.single<UpdateSessionAverageEstimateResponse>();
+
+		if (error) {
+			throw new PostgrestBaseError(
+				'Falha ao atualizar estimativa da sessão',
+				error,
+			);
+		}
+
+		if (!data.success) {
+			throw new Error(data.error_message ?? 'Erro desconhecido');
 		}
 	}
 
@@ -98,6 +125,7 @@ export class SupabaseService {
 			averageEstimate: data.average_estimate,
 			createdAt: data.created_at,
 			updatedAt: data.updated_at,
+			version: data.version,
 		};
 
 		return sessionData;

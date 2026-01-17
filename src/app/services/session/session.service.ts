@@ -19,6 +19,7 @@ import { Session } from '../../interfaces/session';
 import { SupabaseService } from '../shared/supabase.service';
 import { LoadingSpinnerService } from '../shared/loading-spinner.service';
 import { UserService } from '../user/user.service';
+import { ERROR_MESSAGES } from '../../constants/error-messages';
 
 @Injectable({ providedIn: 'root' })
 export class SessionService {
@@ -34,7 +35,7 @@ export class SessionService {
 
 	private sessionChannel: RealtimeChannel | null = null;
 
-	session: WritableSignal<Session | undefined> = signal(undefined);
+	private presentUserIds: WritableSignal<string[]> = signal([]);
 
 	users: WritableSignal<User[]> = signal([]);
 
@@ -42,7 +43,7 @@ export class SessionService {
 		this.users().filter((user) => this.presentUserIds().includes(user.id)),
 	);
 
-	presentUserIds: WritableSignal<string[]> = signal([]);
+	session: WritableSignal<Session | undefined> = signal(undefined);
 
 	getSession(): Session {
 		const session = this.session();
@@ -197,16 +198,29 @@ export class SessionService {
 					filter: `session_id=eq.${session.id}`,
 				},
 				(payload) => {
+					const estimate = payload.new['estimate'];
+					const isObserver = payload.new['is_observer'];
+
 					this.users.update((users) =>
 						users.map((user) =>
 							user.id === payload.new['id']
 								? {
 										...user,
-										estimate: payload.new['estimate'],
-										isObserver: payload.new['is_observer'],
+										estimate,
+										isObserver,
 									}
 								: user,
 						),
+					);
+
+					this.userService.user.update((user) =>
+						user && user.id === payload.new['id']
+							? {
+									...user,
+									estimate,
+									isObserver,
+								}
+							: user,
 					);
 				},
 			)
@@ -219,16 +233,9 @@ export class SessionService {
 					filter: `id=eq.${session.id}`,
 				},
 				(payload) => {
-					const averageEstimate: number | null =
-						payload.new['average_estimate'];
-
-					const estimateOptions: string = payload.new['estimate_options'];
-
-					if (averageEstimate === null) {
-						this.userService.user.update((user) =>
-							user ? { ...user, estimate: null } : user,
-						);
-					}
+					const averageEstimate = payload.new['average_estimate'];
+					const estimateOptions = payload.new['estimate_options'];
+					const version = payload.new['version'];
 
 					this.session.update((session) =>
 						session
@@ -236,18 +243,18 @@ export class SessionService {
 									...session,
 									estimateOptions,
 									averageEstimate,
+									version,
 								}
 							: session,
 					);
 				},
 			)
-			.subscribe(async (status, err) => {
+			.subscribe(async (status) => {
 				console.log(
 					`Supabase channel status: ${status} | ${new Date().toISOString()}`,
 				);
 
 				if (status !== 'SUBSCRIBED') {
-					console.log('Error: ', err);
 					return;
 				}
 
@@ -262,6 +269,8 @@ export class SessionService {
 					});
 					console.log('Track response - Session: ', presenceState);
 				}
+
+				this.updatePresentUsers();
 			});
 	}
 
@@ -290,7 +299,11 @@ export class SessionService {
 				1,
 			);
 
-			await this.supabaseService.updateSession(session.id, { averageEstimate });
+			await this.supabaseService.updateSessionAverageEstimate(
+				session.id,
+				averageEstimate,
+				session.version,
+			);
 
 			await this.supabaseService.insertSessionResults({
 				generatedBy: this.userService.getUser().name,
@@ -299,19 +312,27 @@ export class SessionService {
 				description: 'Sem descrição',
 			});
 		} catch (error) {
-			alert(error);
+			this.handleUpdateSessionAverageEstimateErrors(
+				error as Error,
+				ERROR_MESSAGES.UPDATE_AVERAGE_ESTIMATE,
+			);
 		}
 	}
 
 	async restartSessionAverageEstimate() {
 		try {
 			const session = this.getSession();
-			await this.supabaseService.updateSession(session.id, {
-				averageEstimate: null,
-			});
+			await this.supabaseService.updateSessionAverageEstimate(
+				session.id,
+				null,
+				session.version,
+			);
 			await this.supabaseService.updateUserEstimates(session.id, null);
 		} catch (error) {
-			alert(error);
+			this.handleUpdateSessionAverageEstimateErrors(
+				error as Error,
+				ERROR_MESSAGES.RESTART_AVERAGE_ESTIMATE,
+			);
 		}
 	}
 
@@ -326,5 +347,23 @@ export class SessionService {
 				text: `Falha ao copiar link para a área de transferência: ${error}`,
 			});
 		}
+	}
+
+	private handleUpdateSessionAverageEstimateErrors(
+		error: Error,
+		defaultErrorMessage: string,
+	) {
+		switch (error.message) {
+			case 'CONFLICT_ESTIMATE_ALREADY_UPDATED':
+				this.toastService.show({
+					text: ERROR_MESSAGES.CONFLICT_ESTIMATE_ALREADY_UPDATED,
+				});
+				break;
+			default:
+				this.toastService.show({
+					text: defaultErrorMessage,
+				});
+		}
+		console.error(error);
 	}
 }

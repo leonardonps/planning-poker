@@ -78,6 +78,8 @@ export class Session implements AfterViewInit, OnInit, OnDestroy {
 
 	protected settingsMenuOpen = false;
 
+	protected isUpdatingAverageEstimate = false;
+
 	ngOnInit() {
 		const sessionId = this.route.snapshot.paramMap.get('id');
 		const userId = sessionStorage.getItem('userId');
@@ -111,13 +113,17 @@ export class Session implements AfterViewInit, OnInit, OnDestroy {
 	}
 
 	async updateSessionAverageEstimate() {
+		this.isUpdatingAverageEstimate = true;
 		await this.sessionService.updateSessionAverageEstimate(
 			this.userEstimates(),
 		);
+		this.isUpdatingAverageEstimate = false;
 	}
 
 	async restartSessionAverageEstimate() {
+		this.isUpdatingAverageEstimate = true;
 		await this.sessionService.restartSessionAverageEstimate();
+		this.isUpdatingAverageEstimate = false;
 	}
 
 	onOpenEditEstimateOptionsModal() {

@@ -4,10 +4,14 @@ export interface Session {
 	averageEstimate: number | null;
 	createdAt: Date;
 	updatedAt: Date;
+	version: number;
 }
 
-export type SessionCreate = Omit<Session, 'createdAt' | 'updatedAt'>;
+export type SessionCreate = Omit<
+	Session,
+	'createdAt' | 'updatedAt' | 'version'
+>;
 
 export type SessionUpdate = Partial<
-	Omit<Session, 'id' | 'createdAt' | 'updatedAt'>
+	Omit<Session, 'id' | 'createdAt' | 'updatedAt' | 'version'>
 >;

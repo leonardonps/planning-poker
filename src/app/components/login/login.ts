@@ -30,7 +30,7 @@ export class Login {
 			};
 
 			const createdSession =
-				await this.supabaseService.insertSession(newSession);
+				await this.sessionService.createSession(newSession);
 
 			this.sessionService.session.set(createdSession);
 			this.router.navigate(['session', createdSession.id]);

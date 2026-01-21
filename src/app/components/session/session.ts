@@ -5,9 +5,11 @@ import {
 	inject,
 	OnDestroy,
 	OnInit,
+	signal,
 	Signal,
 	ViewChild,
 	ViewContainerRef,
+	WritableSignal,
 } from '@angular/core';
 
 import { ActivatedRoute } from '@angular/router';
@@ -21,6 +23,7 @@ import { EstimateOptionsModalService } from '../../services/modals/estimate-opti
 import { User } from '../../interfaces/user';
 import { UserService } from '../../services/user/user.service';
 import { SessionResultsService } from '../../services/session-results/session-results.service';
+import { ERROR_MESSAGES } from '../../constants/error-messages';
 
 @Component({
 	selector: 'app-session',
@@ -76,9 +79,9 @@ export class Session implements AfterViewInit, OnInit, OnDestroy {
 		() => this.userService.user()?.isObserver,
 	);
 
-	protected settingsMenuOpen = false;
+	protected settingsMenuOpen: WritableSignal<boolean> = signal(false);
 
-	protected isUpdatingAverageEstimate = false;
+	protected isUpdatingAverageEstimate: WritableSignal<boolean> = signal(false);
 
 	ngOnInit() {
 		const sessionId = this.route.snapshot.paramMap.get('id');
@@ -101,7 +104,7 @@ export class Session implements AfterViewInit, OnInit, OnDestroy {
 		this.userModalService.close();
 		this.estimateOptionsModalService.close();
 
-		this.sessionService.destroySessionChannel();
+		this.sessionService.refreshSession();
 	}
 
 	async copySessionLink() {
@@ -113,17 +116,35 @@ export class Session implements AfterViewInit, OnInit, OnDestroy {
 	}
 
 	async updateSessionAverageEstimate() {
-		this.isUpdatingAverageEstimate = true;
-		await this.sessionService.updateSessionAverageEstimate(
-			this.userEstimates(),
-		);
-		this.isUpdatingAverageEstimate = false;
+		this.isUpdatingAverageEstimate.set(true);
+
+		try {
+			await this.sessionService.updateSessionAverageEstimate(
+				this.userEstimates(),
+			);
+		} catch (error) {
+			this.sessionService.handleUpdateSessionAverageEstimateErrors(
+				error as Error,
+				ERROR_MESSAGES.UPDATE_AVERAGE_ESTIMATE,
+			);
+		} finally {
+			this.isUpdatingAverageEstimate.set(false);
+		}
 	}
 
 	async restartSessionAverageEstimate() {
-		this.isUpdatingAverageEstimate = true;
-		await this.sessionService.restartSessionAverageEstimate();
-		this.isUpdatingAverageEstimate = false;
+		this.isUpdatingAverageEstimate.set(true);
+
+		try {
+			await this.sessionService.restartSessionAverageEstimate();
+		} catch (error) {
+			this.sessionService.handleUpdateSessionAverageEstimateErrors(
+				error as Error,
+				ERROR_MESSAGES.RESTART_AVERAGE_ESTIMATE,
+			);
+		} finally {
+			this.isUpdatingAverageEstimate.set(false);
+		}
 	}
 
 	onOpenEditEstimateOptionsModal() {
@@ -135,7 +156,7 @@ export class Session implements AfterViewInit, OnInit, OnDestroy {
 	}
 
 	onToggleSettingsMenu() {
-		this.settingsMenuOpen = !this.settingsMenuOpen;
+		this.settingsMenuOpen.set(!this.settingsMenuOpen);
 	}
 
 	async onOpenSessionResultsModal() {

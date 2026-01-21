@@ -5,12 +5,12 @@
 			type="button"
 			id="settings-button"
 			class="material-icons button"
-			[class.selected]="this.settingsMenuOpen"
+			[class.selected]="this.settingsMenuOpen()"
 			(click)="onToggleSettingsMenu()"
 		>
 			settings
 		</button>
-		@if (this.settingsMenuOpen) {
+		@if (this.settingsMenuOpen()) {
 		<ul id="settings-options-list">
 			<li class="item">
 				<button
@@ -80,7 +80,7 @@
 			type="button"
 			class="button"
 			id="estimate-button"
-			[disabled]="isUpdatingAverageEstimate"
+			[disabled]="isUpdatingAverageEstimate()"
 			(click)="updateSessionAverageEstimate()"
 		>
 			Estimar
@@ -92,7 +92,7 @@
 			type="button"
 			class="button"
 			id="restart-button"
-			[disabled]="isUpdatingAverageEstimate"
+			[disabled]="isUpdatingAverageEstimate()"
 			(click)="restartSessionAverageEstimate()"
 		>
 			Reiniciar

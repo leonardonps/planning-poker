@@ -15,7 +15,7 @@ import { SessionNotFoundError } from '../../errors/SessionNotFoundError';
 import { ChannelNotFoundError } from '../../errors/ChannelNotFoundError';
 import { SessionPresence } from '../../interfaces/session-presence';
 import { truncate } from '../../utils/number/truncate';
-import { Session } from '../../interfaces/session';
+import { Session, SessionCreate } from '../../interfaces/session';
 import { SupabaseService } from '../shared/supabase.service';
 import { LoadingSpinnerService } from '../shared/loading-spinner.service';
 import { UserService } from '../user/user.service';
@@ -33,9 +33,13 @@ export class SessionService {
 
 	private userService = inject(UserService);
 
-	private sessionChannel: RealtimeChannel | null = null;
+	private sessionChannel: RealtimeChannel | undefined = undefined;
+
+	private userUpdateDebounce: NodeJS.Timeout | undefined = undefined;
 
 	private presentUserIds: WritableSignal<string[]> = signal([]);
+
+	private firstSubscribed = true;
 
 	users: WritableSignal<User[]> = signal([]);
 
@@ -65,76 +69,9 @@ export class SessionService {
 		return sessionChannel;
 	}
 
-	destroySessionChannel() {
-		this.sessionChannel?.unsubscribe();
-		this.sessionChannel = null;
-	}
-
-	calculateSessionAverageEstimate(estimates: number[]): number {
-		const initialValue = 0;
-
-		const averageEstimate: number =
-			estimates.reduce((sum, estimate) => sum + estimate, initialValue) /
-			estimates.length;
-
-		return averageEstimate;
-	}
-
-	updatePresentUsers() {
-		try {
-			const presentUserIds = Object.values(
-				this.getSessionChannel().presenceState() as Record<
-					string,
-					SessionPresence[]
-				>,
-			)
-				.flat()
-				.map((presence) => presence.userId);
-
-			// When I fix sessionStorage to localStorage
-			// const uniquePresentUserIds = Array.from(new Set(presentUserIds));
-
-			this.presentUserIds.set(presentUserIds);
-		} catch (error) {
-			alert(`Falha ao atualizar usuários presentes: ${error}`);
-		}
-	}
-
-	async initializeSession(sessionId: string | null, userId: string | null) {
-		this.loadingSpinnerService.show();
-
-		try {
-			// Verify if the sessionId is from an existent session
-			if (!sessionId) {
-				throw new SessionNotFoundError(sessionId);
-			}
-
-			// Set existent session
-			await this.setSession(sessionId);
-
-			// Set session users
-			await this.setUsers();
-
-			// Set current user
-			this.userService.user.set(
-				this.users().find((user) => user.id === userId),
-			);
-
-			this.createSessionChannel();
-
-			if (!this.userService.user()) {
-				this.userModalService.open();
-			}
-		} catch (error) {
-			alert(error);
-			this.router.navigate(['/']);
-		} finally {
-			this.loadingSpinnerService.hide();
-		}
-	}
-
-	createSessionChannel() {
+	createSessionChannel(): void {
 		const session = this.getSession();
+
 		this.sessionChannel = this.supabaseService.supabase.channel(
 			`session:${session.id}`,
 		);
@@ -150,103 +87,38 @@ export class SessionService {
 				},
 			)
 			.on(
-				'presence',
-				{
-					event: 'join',
-				},
-				() => {
-					this.updatePresentUsers();
-				},
-			)
-			.on(
-				'presence',
-				{
-					event: 'leave',
-				},
-				() => {
-					this.updatePresentUsers();
-				},
-			)
-			.on(
 				'postgres_changes',
 				{
-					event: 'INSERT',
+					event: '*',
 					schema: 'public',
 					table: 'user',
 					filter: `session_id=eq.${session.id}`,
 				},
-				(payload) => {
-					const createdUser: User = {
-						id: payload.new['id'],
-						name: payload.new['name'],
-						estimate: payload.new['estimate'],
-						isObserver: payload.new['is_observer'],
-						sessionId: payload.new['session_id'],
-						createdAt: payload.new['created_at'],
-						updatedAt: payload.new['updated_at'],
-					};
-
-					this.users.update((users) => [...users, createdUser]);
+				async () => {
+					clearTimeout(this.userUpdateDebounce);
+					this.userUpdateDebounce = setTimeout(async () => {
+						await this.setUsers();
+						if (this.userService.user()) {
+							// Set current user
+							this.userService.user.set(
+								this.users().find(
+									(user) => user.id === this.userService.user()?.id,
+								),
+							);
+						}
+					}, 150);
 				},
 			)
 			.on(
 				'postgres_changes',
 				{
-					event: 'UPDATE',
-					schema: 'public',
-					table: 'user',
-					filter: `session_id=eq.${session.id}`,
-				},
-				(payload) => {
-					const estimate = payload.new['estimate'];
-					const isObserver = payload.new['is_observer'];
-
-					this.users.update((users) =>
-						users.map((user) =>
-							user.id === payload.new['id']
-								? {
-										...user,
-										estimate,
-										isObserver,
-									}
-								: user,
-						),
-					);
-
-					this.userService.user.update((user) =>
-						user && user.id === payload.new['id']
-							? {
-									...user,
-									estimate,
-									isObserver,
-								}
-							: user,
-					);
-				},
-			)
-			.on(
-				'postgres_changes',
-				{
-					event: 'UPDATE',
+					event: '*',
 					schema: 'public',
 					table: 'session',
 					filter: `id=eq.${session.id}`,
 				},
-				(payload) => {
-					const averageEstimate = payload.new['average_estimate'];
-					const estimateOptions = payload.new['estimate_options'];
-					const version = payload.new['version'];
-
-					this.session.update((session) =>
-						session
-							? {
-									...session,
-									estimateOptions,
-									averageEstimate,
-									version,
-								}
-							: session,
-					);
+				async () => {
+					await this.setSession(session.id);
 				},
 			)
 			.subscribe(async (status) => {
@@ -258,9 +130,16 @@ export class SessionService {
 					return;
 				}
 
-				const user = this.userService.user();
+				// Recovering the data when it gets reconnected (subscribed again)
+				if (!this.firstSubscribed) {
+					await this.fetchSessionData(session.id, this.userService.user()?.id);
+				}
+
+				// Once it gets false, the app updates the values every subscribed status
+				this.firstSubscribed = false;
 
 				// If the user is already created, it tracks them
+				const user = this.userService.user();
 				if (user) {
 					const presenceState = await this.getSessionChannel().track({
 						userId: user.id,
@@ -269,9 +148,65 @@ export class SessionService {
 					});
 					console.log('Track response - Session: ', presenceState);
 				}
-
-				this.updatePresentUsers();
 			});
+	}
+
+	refreshSession(): void {
+		this.firstSubscribed = true;
+		this.session.set(undefined);
+		this.users.set([]);
+		this.presentUserIds.set([]);
+
+		this.destroySessionChannel();
+		this.destroyUserDebounce();
+	}
+
+	handleUpdateSessionAverageEstimateErrors(
+		error: Error,
+		defaultErrorMessage: string,
+	): void {
+		switch (error.message) {
+			case 'CONFLICT_ESTIMATE_ALREADY_UPDATED':
+				this.toastService.show({
+					text: ERROR_MESSAGES.CONFLICT_ESTIMATE_ALREADY_UPDATED,
+				});
+				break;
+			default:
+				this.toastService.show({
+					text: defaultErrorMessage,
+				});
+		}
+		console.error(error);
+	}
+
+	async createSession(sessionCreate: SessionCreate): Promise<Session> {
+		return await this.supabaseService.insertSession(sessionCreate);
+	}
+
+	async initializeSession(sessionId: string | null, userId: string | null) {
+		this.refreshSession();
+
+		this.loadingSpinnerService.show();
+
+		try {
+			// Verify if the sessionId is from an existent session
+			if (!sessionId) {
+				throw new SessionNotFoundError(sessionId);
+			}
+
+			await this.fetchSessionData(sessionId, userId);
+
+			this.createSessionChannel();
+
+			if (!this.userService.user()) {
+				this.userModalService.open();
+			}
+		} catch (error) {
+			alert(error);
+			this.router.navigate(['/']);
+		} finally {
+			this.loadingSpinnerService.hide();
+		}
 	}
 
 	async setSession(id: string) {
@@ -290,50 +225,50 @@ export class SessionService {
 		this.users.set(users);
 	}
 
+	async fetchSessionData(
+		sessionId: string,
+		userId: string | null | undefined,
+	): Promise<void> {
+		// Set existent session
+		await this.setSession(sessionId);
+
+		// Set session users
+		await this.setUsers();
+
+		// Set current user
+		this.userService.user.set(this.users().find((user) => user.id === userId));
+	}
+
 	async updateSessionAverageEstimate(estimates: number[]) {
-		try {
-			const session = this.getSession();
+		const session = this.getSession();
 
-			const averageEstimate = truncate(
-				this.calculateSessionAverageEstimate(estimates),
-				1,
-			);
+		const averageEstimate = truncate(
+			this.calculateSessionAverageEstimate(estimates),
+			1,
+		);
 
-			await this.supabaseService.updateSessionAverageEstimate(
-				session.id,
-				averageEstimate,
-				session.version,
-			);
+		await this.supabaseService.updateSessionAverageEstimate(
+			session.id,
+			averageEstimate,
+			session.version,
+		);
 
-			await this.supabaseService.insertSessionResults({
-				generatedBy: this.userService.getUser().name,
-				averageEstimate: averageEstimate,
-				sessionId: session.id,
-				description: 'Sem descrição',
-			});
-		} catch (error) {
-			this.handleUpdateSessionAverageEstimateErrors(
-				error as Error,
-				ERROR_MESSAGES.UPDATE_AVERAGE_ESTIMATE,
-			);
-		}
+		await this.supabaseService.insertSessionResults({
+			generatedBy: this.userService.getUser().name,
+			averageEstimate: averageEstimate,
+			sessionId: session.id,
+			description: 'Sem descrição',
+		});
 	}
 
 	async restartSessionAverageEstimate() {
-		try {
-			const session = this.getSession();
-			await this.supabaseService.updateSessionAverageEstimate(
-				session.id,
-				null,
-				session.version,
-			);
-			await this.supabaseService.updateUserEstimates(session.id, null);
-		} catch (error) {
-			this.handleUpdateSessionAverageEstimateErrors(
-				error as Error,
-				ERROR_MESSAGES.RESTART_AVERAGE_ESTIMATE,
-			);
-		}
+		const session = this.getSession();
+		await this.supabaseService.updateSessionAverageEstimate(
+			session.id,
+			null,
+			session.version,
+		);
+		await this.supabaseService.updateUserEstimates(session.id, null);
 	}
 
 	async copySessionLink(sessionLink: string) {
@@ -349,21 +284,46 @@ export class SessionService {
 		}
 	}
 
-	private handleUpdateSessionAverageEstimateErrors(
-		error: Error,
-		defaultErrorMessage: string,
-	) {
-		switch (error.message) {
-			case 'CONFLICT_ESTIMATE_ALREADY_UPDATED':
-				this.toastService.show({
-					text: ERROR_MESSAGES.CONFLICT_ESTIMATE_ALREADY_UPDATED,
-				});
-				break;
-			default:
-				this.toastService.show({
-					text: defaultErrorMessage,
-				});
+	private updatePresentUsers(): void {
+		try {
+			const presentUserIds = Object.values(
+				this.getSessionChannel().presenceState() as Record<
+					string,
+					SessionPresence[]
+				>,
+			)
+				.flat()
+				.map((presence) => presence.userId);
+
+			// This guarantees no duplicated user by presentUserId
+			const uniquePresentUserIds = Array.from(new Set(presentUserIds));
+
+			this.presentUserIds.set(uniquePresentUserIds);
+		} catch (error) {
+			this.toastService.show({
+				text: 'Falha ao atualizar usuários presentes!',
+			});
+			console.error(error);
 		}
-		console.error(error);
+	}
+
+	private calculateSessionAverageEstimate(estimates: number[]): number {
+		const initialValue = 0;
+
+		const averageEstimate: number =
+			estimates.reduce((sum, estimate) => sum + estimate, initialValue) /
+			estimates.length;
+
+		return averageEstimate;
+	}
+
+	private destroySessionChannel(): void {
+		this.sessionChannel?.unsubscribe();
+		this.sessionChannel = undefined;
+	}
+
+	private destroyUserDebounce(): void {
+		clearTimeout(this.userUpdateDebounce);
+		this.userUpdateDebounce = undefined;
 	}
 }

@@ -29,7 +29,7 @@ export class UserService {
 
 			await this.supabaseService.updateUser(user.id, { estimate });
 		} catch (error) {
-			alert(error);
+			console.error(error);
 		}
 	}
 
@@ -46,7 +46,7 @@ export class UserService {
 
 			await this.supabaseService.updateUser(user.id, { estimate, isObserver });
 		} catch (error) {
-			alert(error);
+			console.error(error);
 		}
 	}
 }

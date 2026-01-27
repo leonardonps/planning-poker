@@ -3,7 +3,6 @@ import { Router } from '@angular/router';
 import { SessionService } from '../../services/session/session.service';
 import { generateId } from '../../utils/string/id';
 import { initialEstimateOptions } from '../../constants/initial-estimate-options';
-import { SupabaseService } from '../../services/shared/supabase.service';
 import { SessionCreate } from '../../interfaces/session';
 
 @Component({
@@ -14,7 +13,6 @@ import { SessionCreate } from '../../interfaces/session';
 })
 export class Login {
 	private router = inject(Router);
-	private supabaseService = inject(SupabaseService);
 	private sessionService = inject(SessionService);
 
 	protected disabled = signal(false);
@@ -32,7 +30,6 @@ export class Login {
 			const createdSession =
 				await this.sessionService.createSession(newSession);
 
-			this.sessionService.session.set(createdSession);
 			this.router.navigate(['session', createdSession.id]);
 		} catch (error) {
 			alert(error);

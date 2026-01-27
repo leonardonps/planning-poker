@@ -208,7 +208,7 @@ export class SupabaseService {
 		}
 	}
 
-	async insertSessionResults(sessionResult: SessionResultCreate) {
+	async insertSessionResult(sessionResult: SessionResultCreate) {
 		const { error } = await this.supabase
 			.from('session_results')
 			.upsert([

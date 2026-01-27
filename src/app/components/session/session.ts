@@ -23,7 +23,8 @@ import { EstimateOptionsModalService } from '../../services/modals/estimate-opti
 import { User } from '../../interfaces/user';
 import { UserService } from '../../services/user/user.service';
 import { SessionResultsService } from '../../services/session-results/session-results.service';
-import { ERROR_MESSAGES } from '../../constants/error-messages';
+import { ERROR_MESSAGES } from '../../constants/messages/error-messages';
+import { ConnectionService } from '../../services/shared/connection.service';
 
 @Component({
 	selector: 'app-session',
@@ -42,6 +43,7 @@ export class Session implements AfterViewInit, OnInit, OnDestroy {
 	private userModalService = inject(UserModalService);
 	private estimateOptionsModalService = inject(EstimateOptionsModalService);
 	private sessionResultsModalService = inject(SessionResultsModalService);
+	private connectionService = inject(ConnectionService);
 
 	private toastService = inject(ToastService);
 
@@ -75,8 +77,12 @@ export class Session implements AfterViewInit, OnInit, OnDestroy {
 		() => this.userService.user()?.estimate,
 	);
 
-	protected userMode: Signal<boolean | undefined> = computed(
+	protected isObserver: Signal<boolean | undefined> = computed(
 		() => this.userService.user()?.isObserver,
+	);
+
+	protected isOnline: Signal<boolean> = computed(() =>
+		this.connectionService.isOnline(),
 	);
 
 	protected settingsMenuOpen: WritableSignal<boolean> = signal(false);
@@ -103,8 +109,9 @@ export class Session implements AfterViewInit, OnInit, OnDestroy {
 		this.toastService.hide();
 		this.userModalService.close();
 		this.estimateOptionsModalService.close();
+		this.sessionResultsModalService.close();
 
-		this.sessionService.refreshSession();
+		this.sessionService.refreshSessionData();
 	}
 
 	async copySessionLink() {
@@ -156,11 +163,13 @@ export class Session implements AfterViewInit, OnInit, OnDestroy {
 	}
 
 	onToggleSettingsMenu() {
-		this.settingsMenuOpen.set(!this.settingsMenuOpen);
+		this.settingsMenuOpen.set(!this.settingsMenuOpen());
 	}
 
 	async onOpenSessionResultsModal() {
-		await this.sessionResultsService.getSessionResults();
+		await this.sessionResultsService.getSessionResults(
+			this.sessionService.getSession().id,
+		);
 		this.sessionResultsModalService.open();
 	}
 }

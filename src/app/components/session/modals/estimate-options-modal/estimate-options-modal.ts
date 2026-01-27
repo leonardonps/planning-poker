@@ -9,7 +9,6 @@ import {
 import { estimateOptionsValidator } from '../../../../validators/estimateOptions';
 import { SessionService } from '../../../../services/session/session.service';
 import { EstimateOptionsModalService } from '../../../../services/modals/estimate-options-modal.service';
-import { SupabaseService } from '../../../../services/shared/supabase.service';
 
 @Component({
 	selector: 'app-estimate-options-modal',
@@ -19,9 +18,7 @@ import { SupabaseService } from '../../../../services/shared/supabase.service';
 })
 export class EstimateOptionsModal implements OnInit {
 	private estimateOptionsModalService = inject(EstimateOptionsModalService);
-
 	private sessionService = inject(SessionService);
-	private supabaseService = inject(SupabaseService);
 
 	protected title = 'Editar opções de estimativa';
 
@@ -57,8 +54,6 @@ export class EstimateOptionsModal implements OnInit {
 		this.disabled.set(true);
 
 		try {
-			const sessionId = this.sessionService.getSession().id;
-
 			const estimateOptions = new Set<number>(
 				this.estimateOptionsForm.controls['estimateOptions'].value
 					?.split(', ')
@@ -69,11 +64,9 @@ export class EstimateOptionsModal implements OnInit {
 				.sort((a, b) => a - b)
 				.join(', ');
 
-			await this.supabaseService.updateSession(sessionId, {
-				estimateOptions: sortedEstimateOptions,
-			});
-
-			await this.supabaseService.updateUserEstimates(sessionId, null);
+			await this.sessionService.updateSessionEstimateOptions(
+				sortedEstimateOptions,
+			);
 
 			this.estimateOptionsModalService.close();
 		} catch (error) {

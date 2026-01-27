@@ -1,5 +1,5 @@
 import { inject, Injectable, signal, WritableSignal } from '@angular/core';
-import { User } from '../../interfaces/user';
+import { User, UserCreate } from '../../interfaces/user';
 import { UserNotFoundError } from '../../errors/UserNotFoundError';
 import { SupabaseService } from '../shared/supabase.service';
 
@@ -9,6 +9,8 @@ export class UserService {
 
 	user: WritableSignal<User | undefined> = signal(undefined);
 
+	userIdSessionStorage: WritableSignal<string | null> = signal(null);
+
 	getUser(): User {
 		const user = this.user();
 
@@ -17,6 +19,10 @@ export class UserService {
 		}
 
 		return user;
+	}
+
+	async createUser(userCreate: UserCreate): Promise<User> {
+		return this.supabaseService.insertUser(userCreate);
 	}
 
 	async updateUserEstimate(option: number) {

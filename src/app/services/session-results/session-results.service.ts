@@ -1,24 +1,22 @@
 import { inject, Injectable, signal, WritableSignal } from '@angular/core';
-import { SessionService } from '../session/session.service';
 import { SupabaseService } from '../shared/supabase.service';
-import { SessionResult } from '../../interfaces/session-results';
 import { ExcelService } from '../shared/excel.service';
+import {
+	SessionResult,
+	SessionResultCreate,
+} from '../../interfaces/session-results';
 
 @Injectable({ providedIn: 'root' })
 export class SessionResultsService {
-	private sessionService = inject(SessionService);
 	private supabaseService = inject(SupabaseService);
 	private excelService = inject(ExcelService);
 
 	sessionResults: WritableSignal<SessionResult[]> = signal([]);
 
-	async getSessionResults() {
+	async getSessionResults(sessionId: string) {
 		try {
-			const session = this.sessionService.getSession();
-
-			const sessionResults = await this.supabaseService.getSessionResults(
-				session.id,
-			);
+			const sessionResults =
+				await this.supabaseService.getSessionResults(sessionId);
 
 			this.sessionResults.set(sessionResults);
 		} catch (error) {
@@ -26,28 +24,29 @@ export class SessionResultsService {
 		}
 	}
 
-	async deleteSessionResult(id: string) {
-		await this.supabaseService.deleteSessionResult(id);
-
-		this.sessionResults.update((sessionResults) =>
-			sessionResults.filter((sessionResult) => sessionResult.id !== id),
-		);
+	async insertSessionResult(sessionResultCreate: SessionResultCreate) {
+		await this.supabaseService.insertSessionResult(sessionResultCreate);
 	}
 
-	async updateSessionResultDescription(
-		sessionResultId: string,
-		description: string,
-	) {
-		await this.supabaseService.updateSessionResult(sessionResultId, {
+	async updateSessionResultDescription(id: string, description: string) {
+		await this.supabaseService.updateSessionResult(id, {
 			description,
 		});
 
 		this.sessionResults.update((sessionResults) =>
 			sessionResults.map((sessionResult) =>
-				sessionResult.id === sessionResultId
+				sessionResult.id === id
 					? { ...sessionResult, description: description }
 					: sessionResult,
 			),
+		);
+	}
+
+	async deleteSessionResult(id: string) {
+		await this.supabaseService.deleteSessionResult(id);
+
+		this.sessionResults.update((sessionResults) =>
+			sessionResults.filter((sessionResult) => sessionResult.id !== id),
 		);
 	}
 

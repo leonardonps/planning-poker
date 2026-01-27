@@ -5,12 +5,13 @@
 			type="button"
 			id="settings-button"
 			class="material-icons button"
-			[class.selected]="this.settingsMenuOpen()"
+			[class.selected]="this.settingsMenuOpen() && this.isOnline()"
 			(click)="onToggleSettingsMenu()"
+			[disabled]="!isOnline()"
 		>
 			settings
 		</button>
-		@if (this.settingsMenuOpen()) {
+		@if (this.settingsMenuOpen() && this.isOnline()) {
 		<ul id="settings-options-list">
 			<li class="item">
 				<button
@@ -29,8 +30,8 @@
 					class="button"
 					(click)="toggleUserMode()"
 				>
-					{{ this.userMode() ? 'Mudar para modo participante' : 'Mudar para modo
-					observador' }}
+					{{ this.isObserver() ? 'Mudar para modo participante' : 'Mudar para
+					modo observador' }}
 				</button>
 			</li>
 			<li class="item">
@@ -80,7 +81,7 @@
 			type="button"
 			class="button"
 			id="estimate-button"
-			[disabled]="isUpdatingAverageEstimate()"
+			[disabled]="isUpdatingAverageEstimate() || !isOnline()"
 			(click)="updateSessionAverageEstimate()"
 		>
 			Estimar
@@ -92,7 +93,7 @@
 			type="button"
 			class="button"
 			id="restart-button"
-			[disabled]="isUpdatingAverageEstimate()"
+			[disabled]="isUpdatingAverageEstimate() || !isOnline()"
 			(click)="restartSessionAverageEstimate()"
 		>
 			Reiniciar
@@ -104,7 +105,13 @@
 		</p>
 		}
 	</div>
-	@if (!this.userMode()) {
+	@if(!this.isOnline()) {
+	<div class="warning-banner" data-type="offline">
+		<p class="warning-banner-text">
+			Conexão perdida. Por favor, verifique sua conexão com a internet.
+		</p>
+	</div>
+	} @else if (!this.isObserver()) {
 	<div id="estimate-options">
 		<ul>
 			@if (typeof this.avegareEstimate() !== 'number' && this.estimateOptions())
@@ -138,8 +145,8 @@
 		</ul>
 	</div>
 	} @else {
-	<div id="observer-mode-card">
-		<p id="observer-mode-text">
+	<div class="warning-banner" data-type="observer">
+		<p class="warning-banner-text">
 			Você está no modo de observador. Caso queira estimar também, clique no
 			botão abaixo:
 		</p>

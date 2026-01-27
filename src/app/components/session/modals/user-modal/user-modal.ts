@@ -16,7 +16,6 @@ import {
 import { UserModalService } from '../../../../services/modals/user-modal.service';
 import { SessionService } from '../../../../services/session/session.service';
 import { generateId } from '../../../../utils/string/id';
-import { SupabaseService } from '../../../../services/shared/supabase.service';
 import { UserCreate } from '../../../../interfaces/user';
 import { UserService } from '../../../../services/user/user.service';
 
@@ -29,9 +28,8 @@ import { UserService } from '../../../../services/user/user.service';
 export class UserModal implements OnInit, AfterViewInit {
 	@ViewChild('userName') userNameRef!: ElementRef;
 
-	private supabaseService = inject(SupabaseService);
-	private sessionService = inject(SessionService);
 	private userService = inject(UserService);
+	private sessionService = inject(SessionService);
 
 	private userModalService = inject(UserModalService);
 
@@ -69,15 +67,19 @@ export class UserModal implements OnInit, AfterViewInit {
 		try {
 			const session = this.sessionService.getSession();
 
+			const userId = generateId(8);
+
 			const newUser: UserCreate = {
-				id: generateId(8),
+				id: userId,
 				name: this.userForm.controls['name'].value,
 				isObserver: this.userForm.controls['isObserver'].value,
 				estimate: null,
 				sessionId: session.id,
 			};
 
-			const createdUser = await this.supabaseService.insertUser(newUser);
+			sessionStorage.setItem('userId', userId);
+			this.userService.userIdSessionStorage.set(userId);
+			const createdUser = await this.userService.createUser(newUser);
 
 			this.userService.user.set(createdUser);
 
@@ -89,12 +91,13 @@ export class UserModal implements OnInit, AfterViewInit {
 					onlineAt: new Date().toISOString(),
 				});
 
-			console.log('Track response - User: ', presenceState);
-
-			sessionStorage.setItem('userId', createdUser.id);
+			console.warn('Track response - User: ', presenceState);
 
 			this.userModalService.close();
 		} catch (error) {
+			sessionStorage.removeItem('userId');
+			this.userService.userIdSessionStorage.set(null);
+			this.userService.user.set(undefined);
 			alert(error);
 		} finally {
 			this.disabled = false;

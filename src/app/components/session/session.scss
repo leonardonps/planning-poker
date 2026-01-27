@@ -293,7 +293,7 @@ main {
   font-size: 100%;
 }
 
-#observer-mode-card {
+.warning-banner {
   display: flex;
   flex-flow: column nowrap;
   justify-content: space-evenly;
@@ -309,16 +309,14 @@ main {
   border-radius: 10px;
 }
 
-#observer-mode-text {
+.warning-banner-text {
   display: flex;
   justify-content: center;
   align-items: center;
 
   height: 100%;
   width: 100%;
-
-  margin-bottom: 2%;
-
+  
   font-size: 0.9rem;
   text-align: center;
 }
@@ -326,6 +324,8 @@ main {
 #toggle-user-mode-button {
   height: 55px;
   min-width: 190px;
+  
+  margin-top: 2%;
   border-radius: 10px;
 }
 
@@ -336,8 +336,7 @@ main {
 
   header,
   #session-estimate-card,
-  #estimate-options,
-  #observer-mode-card {
+  #estimate-options{
     margin-bottom: 1%;
   }
 
@@ -365,16 +364,17 @@ main {
     margin: 0.5%;
   }
 
-  #observer-mode-card {
+  .warning-banner {
     width: 80%;
     padding: 1.5%;
   }
 
-  #observer-mode-text {
+  .warning-banner-text {
     font-size: 1rem;
   }
 
   #toggle-user-mode-button {
+    margin-top: 1%;
     height: 50px;
     border-radius: 10px;
     font-size: 1rem;

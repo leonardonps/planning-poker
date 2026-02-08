@@ -10,7 +10,7 @@
 header {
   display: flex;
   flex-flow: row wrap;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
 
   width: 100%;
@@ -25,72 +25,24 @@ h1 {
   display: flex;
   align-items: center;
 
-  width: 80%;
+  width: 65%;
   height: 100%;
 
   font-size: 1.65rem;
 }
 
-#settings-dropdown {
+#settings-list {
   display: flex;
-  flex-flow: column nowrap;
-  justify-content: center;
-  align-items: flex-end;
-
-  position: relative;
-
-  width: 20%;
-  height: 100%;
+  flex-flow: row nowrap;
+  justify-content: flex-end;
+  align-items: center;
+  width: 35%;
+  gap: 3px;
 }
 
-#settings-button {
-  width: 50px;
-  height: 45px;
-}
-
-.selected {
-  background-color: $color-secondary;
-  color: $color-primary;
-}
-
-#settings-options-list {
-  position: absolute;
-  top: 85%;
-  right: 2;
-  z-index: 1;
-
-  width: 200px;
-
-  overflow: auto;
-
-  padding: 1%;
-
-  border: 1px solid $color-secondary;
-  border-radius: 5px;
-
-  animation: slideScale 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  transform-origin: top right;
-}
-
-@keyframes slideScale {
-  from {
-    opacity: 0;
-    transform: translateY(-8px) scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-#settings-options-list > li > button {
-  width: 100%;
-  height: 35px;
-
-  border: none;
-  border-radius: 5px;
-
-  font-size: 0.85rem;
+#settings-list > li > button {
+  width: 35px;
+  height:35px;
 }
 
 main {
@@ -325,7 +277,7 @@ main {
   height: 55px;
   min-width: 190px;
   
-  margin-top: 2%;
+  margin: 2% 0%;
   border-radius: 10px;
 }
 
@@ -340,12 +292,13 @@ main {
     margin-bottom: 1%;
   }
 
-  #settings-options-list {
-    width: 250px;
+  #settings-list {
+    gap: 5px;
   }
 
-  #settings-options-list > li > button {
-    font-size: 1rem;
+  #settings-list > li > button {
+    height: 45px;
+    width: 45px;
   }
 
   #users {

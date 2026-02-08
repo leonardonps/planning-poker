@@ -1,6 +1,9 @@
 @use 'colors' as *;
 
-.button {
+button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     border: 1px solid $color-secondary;
     background-color: $color-primary;
     
@@ -21,4 +24,9 @@
         border-color: $color-tertiary;
         color: $color-tertiary;
     }
+}
+
+button span {
+    background-color: inherit;
+    color: inherit;
 }

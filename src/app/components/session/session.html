@@ -1,52 +1,32 @@
 <header>
 	<h1>Planning Poker</h1>
-	<div id="settings-dropdown">
-		<button
-			type="button"
-			id="settings-button"
-			class="material-icons button"
-			[class.selected]="this.settingsMenuOpen() && this.isOnline()"
-			(click)="onToggleSettingsMenu()"
-			[disabled]="!isOnline()"
-		>
-			settings
-		</button>
-		@if (this.settingsMenuOpen() && this.isOnline()) {
-		<ul id="settings-options-list">
-			<li class="item">
-				<button
-					type="button"
-					id="invite-team-button"
-					(click)="copySessionLink()"
-					class="button"
-				>
-					Convidar sua equipe
-				</button>
-			</li>
-			<li class="item">
-				<button
-					type="button"
-					id="toggle-user-mode-button"
-					class="button"
-					(click)="toggleUserMode()"
-				>
-					{{ this.isObserver() ? 'Mudar para modo participante' : 'Mudar para
-					modo observador' }}
-				</button>
-			</li>
-			<li class="item">
-				<button
-					type="button"
-					id="session-results-button"
-					(click)="onOpenSessionResultsModal()"
-					class="button"
-				>
-					Ver histórico da sessão
-				</button>
-			</li>
-		</ul>
-		}
-	</div>
+	<ul id="settings-list">
+		<li>
+			<button
+				type="button"
+				[disabled]="!isOnline()"
+				(click)="copySessionLink()"
+			>
+				<span class="material-symbols-outlined"> share </span>
+			</button>
+		</li>
+		<li>
+			<button type="button" (click)="toggleUserMode()" [disabled]="!isOnline()">
+				<span class="material-symbols-outlined">
+					{{ this.isObserver() ? 'person' : 'eyeglasses_2' }}
+				</span>
+			</button>
+		</li>
+		<li>
+			<button
+				type="button"
+				(click)="onOpenSessionResultsModal()"
+				[disabled]="!isOnline()"
+			>
+				<span class="material-symbols-outlined"> history </span>
+			</button>
+		</li>
+	</ul>
 </header>
 <main>
 	<div id="users">
@@ -79,7 +59,6 @@
 		"number") ) {
 		<button
 			type="button"
-			class="button"
 			id="estimate-button"
 			[disabled]="isUpdatingAverageEstimate() || !isOnline()"
 			(click)="updateSessionAverageEstimate()"
@@ -91,7 +70,6 @@
 		<p id="session-average-estimate">{{ this.avegareEstimate() }}</p>
 		<button
 			type="button"
-			class="button"
 			id="restart-button"
 			[disabled]="isUpdatingAverageEstimate() || !isOnline()"
 			(click)="restartSessionAverageEstimate()"
@@ -119,11 +97,11 @@
 			<li>
 				<button
 					type="button"
-					class="button material-icons"
+					class="material-icons"
 					id="edit-estimate-options-button"
 					(click)="onOpenEditEstimateOptionsModal()"
 				>
-					edit
+					<span class="material-symbols-outlined"> edit </span>
 				</button>
 			</li>
 			} @for (option of this.estimateOptions(); track $index) {
@@ -154,7 +132,6 @@
 			type="button"
 			(click)="toggleUserMode()"
 			id="toggle-user-mode-button"
-			class="button"
 		>
 			Mudar para modo participante
 		</button>

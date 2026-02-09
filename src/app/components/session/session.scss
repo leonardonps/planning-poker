@@ -212,6 +212,10 @@ main {
   font-size: 1rem;
 }
 
+.estimate-option:disabled {
+  color: $color-secondary;
+}
+
 .estimate-option-highlight:hover {
   position: relative;
   top: -3px;
@@ -230,13 +234,19 @@ main {
   top: -3px;
 }
 
-
 .selected-estimate-option:hover {
   background-color: rgb(230, 230, 230);
   color: $color-primary;
 
   cursor: pointer;
 }
+
+.selected-estimate-option:disabled {
+  background-color: $color-secondary;
+  color: $color-primary;
+  cursor: not-allowed;
+}
+
 
 #edit-estimate-options-button {
   height: 38px;

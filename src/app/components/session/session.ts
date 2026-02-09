@@ -60,9 +60,10 @@ export class Session implements AfterViewInit, OnInit, OnDestroy {
 	);
 
 	protected userEstimates: Signal<number[]> = computed(() =>
-		this.presentUsers()
-			.filter((user) => user.estimate !== null)
-			.map((user) => user.estimate as number),
+		this.sessionService
+			.presentUsers()
+			.map((user) => user.estimate)
+			.filter((estimate) => typeof estimate === 'number'),
 	);
 
 	protected estimateOptions: Signal<number[] | undefined> = computed(() =>

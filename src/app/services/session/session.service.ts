@@ -50,7 +50,11 @@ export class SessionService {
 	users: WritableSignal<User[]> = signal([]);
 
 	presentUsers: Signal<User[]> = computed(() =>
-		this.users().filter((user) => this.presentUserIds().includes(user.id)),
+		this.users().filter(
+			(user) =>
+				this.presentUserIds().includes(user.id) ||
+				typeof user.estimate === 'number',
+		),
 	);
 
 	session: WritableSignal<Session | undefined> = signal(undefined);
@@ -351,8 +355,6 @@ export class SessionService {
 	}
 
 	private async handleReconnection() {
-		this.toastService.hide();
-
 		this.initializeSession(
 			this.getSession().id,
 			this.userService.userIdSessionStorage(),
@@ -366,7 +368,6 @@ export class SessionService {
 	}
 
 	private handleDisconnection() {
-		this.toastService.hide();
 		this.toastService.show({
 			text: CONNECTION_MESSAGES.DISCONNECTED,
 		});

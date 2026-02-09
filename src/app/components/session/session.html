@@ -11,7 +11,7 @@
 			</button>
 		</li>
 		<li>
-			<button type="button" (click)="toggleUserMode()" [disabled]="!isOnline()">
+			<button type="button" [disabled]="!isOnline()" (click)="toggleUserMode()">
 				<span class="material-symbols-outlined">
 					{{ this.isObserver() ? 'person' : 'eyeglasses_2' }}
 				</span>
@@ -20,8 +20,8 @@
 		<li>
 			<button
 				type="button"
-				(click)="onOpenSessionResultsModal()"
 				[disabled]="!isOnline()"
+				(click)="onOpenSessionResultsModal()"
 			>
 				<span class="material-symbols-outlined"> history </span>
 			</button>

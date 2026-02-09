@@ -31,6 +31,9 @@ export class SupabaseService {
 				realtime: {
 					worker: true,
 					heartbeatIntervalMs: 15000,
+					heartbeatCallback: (status) => {
+						if (status === 'disconnected') this._supabase.realtime.connect();
+					},
 				},
 			},
 		);

@@ -15,7 +15,9 @@ export class ToastService {
 	}
 
 	show(toastConfig: ToastConfig) {
-		if (!this.hostRef || this.isOpen) return;
+		if (!this.hostRef) return;
+
+		if (this.isOpen) this.hide();
 
 		this.isOpen = true;
 		this.toastRef = this.hostRef.createComponent(Toast);

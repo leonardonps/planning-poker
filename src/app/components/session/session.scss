@@ -25,10 +25,10 @@ h1 {
   display: flex;
   align-items: center;
 
-  width: 65%;
+  width: 60%;
   height: 100%;
 
-  font-size: 1.65rem;
+  font-size: 1.60rem;
 }
 
 #settings-list {
@@ -36,13 +36,13 @@ h1 {
   flex-flow: row nowrap;
   justify-content: flex-end;
   align-items: center;
-  width: 35%;
+  width: 40%;
   gap: 3px;
 }
 
 #settings-list > li > button {
-  width: 35px;
-  height:35px;
+  width: 40px;
+  height: 40px;
 }
 
 main {
@@ -239,8 +239,8 @@ main {
 }
 
 #edit-estimate-options-button {
-  height: 55%;
-  width: 75%;
+  height: 38px;
+  width: 38px;
 
   font-size: 100%;
 }
@@ -297,8 +297,8 @@ main {
   }
 
   #settings-list > li > button {
-    height: 45px;
-    width: 45px;
+    height: 46px;
+    width: 46px;
   }
 
   #users {
